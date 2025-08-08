@@ -1716,4 +1716,128 @@ class Provider
 
         return $criteria;
     }
+
+    /**
+     * Get data for assets overview pie chart showing the same asset types as the dashboard
+     *
+     * @param array $params
+     * @return array
+     */
+    public static function getAssetsOverviewPieChart(array $params = []): array
+    {
+        // Define the exact asset types that appear in the dashboard big number cards
+        $dashboard_assets = [
+            'Computer' => __('Computers'),
+            'Software' => __('Software'), 
+            'NetworkEquipment' => __('Network devices'),
+            'Rack' => __('Racks'),
+            'Enclosure' => __('Enclosures'),
+            'Monitor' => __('Monitors'),
+            'SoftwareLicense' => __('Licenses'),
+            'Printer' => __('Printers'),
+            'PDU' => __('PDUs'),
+            'Phone' => __('Phones')
+        ];
+
+        $labels = [];
+        $values = [];
+        $colors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+            '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
+        ];
+
+        $total_count = 0;
+
+        foreach ($dashboard_assets as $itemtype => $label) {
+            if (!class_exists($itemtype)) {
+                continue;
+            }
+
+            $item = new $itemtype();
+            if (!$item->canView()) {
+                continue;
+            }
+
+            // Build criteria for counting
+            $criteria = [
+                'COUNT' => 'cpt',
+                'FROM' => $item::getTable()
+            ];
+
+            // Add basic conditions
+            $where_conditions = [];
+            
+            // Check if item can be deleted and exclude deleted items
+            if ($item->maybeDeleted()) {
+                $where_conditions[$item::getTable() . '.is_deleted'] = 0;
+            }
+            
+            // Check if item can be template and exclude templates
+            if ($item->maybeTemplate()) {
+                $where_conditions[$item::getTable() . '.is_template'] = 0;
+            }
+
+            // Apply entity restrictions
+            if ($item->isEntityAssign()) {
+                $where_conditions += getEntitiesRestrictCriteria($item::getTable(), '', '', $item->maybeRecursive());
+            }
+
+            if (!empty($where_conditions)) {
+                $criteria['WHERE'] = $where_conditions;
+            }
+
+            // Apply any additional filters
+            if (isset($params['filters'])) {
+                $filter_criteria = self::getFiltersCriteria($itemtype, $params['filters']);
+                if (isset($filter_criteria['WHERE'])) {
+                    $criteria['WHERE'] = array_merge($criteria['WHERE'] ?? [], $filter_criteria['WHERE']);
+                }
+                if (isset($filter_criteria['LEFT JOIN'])) {
+                    $criteria['LEFT JOIN'] = $filter_criteria['LEFT JOIN'];
+                }
+            }
+
+            try {
+                $iterator = DBConnection::getInstance()->request($criteria);
+                $count = $iterator->current()['cpt'] ?? 0;
+                
+                // Add to chart data (include even if count is 0 to show complete overview)
+                $labels[] = $label;
+                $values[] = (int)$count;
+                $total_count += $count;
+                
+            } catch (Exception $e) {
+                // If query fails, add with 0 count
+                $labels[] = $label;
+                $values[] = 0;
+            }
+        }
+
+        // If no data at all, return a placeholder
+        if ($total_count === 0) {
+            return [
+                'data' => [
+                    'labels' => [__('No assets found')],
+                    'datasets' => [[
+                        'data' => [1],
+                        'backgroundColor' => ['#E0E0E0']
+                    ]]
+                ],
+                'label' => __('Assets Overview'),
+                'icon' => 'fas fa-chart-pie'
+            ];
+        }
+
+        return [
+            'data' => [
+                'labels' => $labels,
+                'datasets' => [[
+                    'data' => $values,
+                    'backgroundColor' => array_slice($colors, 0, count($values))
+                ]]
+            ],
+            'label' => __('Assets Overview'),
+            'icon' => 'fas fa-chart-pie'
+        ];
+    }
 }

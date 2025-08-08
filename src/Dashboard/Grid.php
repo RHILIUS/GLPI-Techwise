@@ -1203,7 +1203,7 @@ HTML;
 
                     $cards["count_" . $itemtype . "_" . $fk_itemtype] = [
                         'widgettype' => ['summaryNumbers', 'multipleNumber', 'pie', 'donut', 'halfpie', 'halfdonut', 'bar', 'hbar'],
-                        'itemtype'   => "\\Computer",
+                        'itemtype'   => "\\$itemtype",
                         'group'      => _n('Asset', 'Assets', Session::getPluralNumber()),
                         'label'      => $label,
                         'provider'   => "Glpi\\Dashboard\\Provider::multipleNumber" . $itemtype . "By" . $fk_itemtype,
@@ -1211,6 +1211,16 @@ HTML;
                     ];
                 }
             }
+
+            // Add Assets Overview Pie Chart - shows distribution of all dashboard asset types
+            $cards["assets_overview_pie"] = [
+                'widgettype' => ['pie', 'donut', 'halfpie', 'halfdonut'],
+                'itemtype'   => "\\Asset",
+                'group'      => _n('Asset', 'Assets', Session::getPluralNumber()),
+                'label'      => __('Assets Overview'),
+                'provider'   => "Glpi\\Dashboard\\Provider::getAssetsOverviewPieChart",
+                'filters'    => [],
+            ];
 
             $tickets_cases = [
                 'late'               => __("Late tickets"),
