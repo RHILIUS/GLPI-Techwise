@@ -1,0 +1,30 @@
+# GLPI runtime folders
+files/_log/
+files/_cache/
+files/_tmp/
+files/_dumps/
+files/_uploads/
+files/_pictures/
+files/_sessions/
+
+# Sensitive config files
+config_db.php
+config_path.php
+
+# Composer dependencies (optional)
+# vendor/
+
+# IDE and OS clutter
+*.swp
+*.bak
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+
+# Node modules (if using frontend tools)
+# node_modules/
+
+# Environment files
+.env
+.env.local
