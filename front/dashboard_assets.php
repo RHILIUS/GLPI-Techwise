@@ -11,7 +11,27 @@
  * @copyright 2003-2014 by the INDEPNET Development Team.
  * @licence   https://www.gnu.org/licenses/gpl-3.0.html
  *
- * ---------------------------------------------------------------------
+ * ---------------------------// Cri// Cri// Cri// Critical Issues Details
+echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #ff6b6b; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;">🚨</span>Critical Issues</h3>';al Issues Deta// Warning Issues Details
+ech// Recommendations Section
+echo '<div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #4caf50; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;">💡</span>Recommendations</h3>';<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #ffa726; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;">⚠️</span>Warning Issues</h3>';
+echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #ff6b6b; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;">🚨</span>Critical Issues</h3>';al Issues Deta// Warning Issues Details
+ech// Recommendations Section
+echo '<div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #4caf50; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;">💡</span>Recommendations</h3>';<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #ffa726; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;">⚠️</span>Warning Issues</h3>';
+echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #ff6b6b; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;">🚨</span>Critical Issues</h3>';al Issues Deta// Warning Issues Details
+ech// Recommendations Section
+echo '<div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #4caf50; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;">💡</span>Recommendations</h3>';<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #ffa726; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;">⚠️</span>Warning Issues</h3>';
+echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #ff6b6b; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;">🚨</span>Critical Issues</h3>';---------------------------------------
  *
  * LICENSE
  *
@@ -126,39 +146,411 @@ foreach ($asset_types as $class => $info) {
 
 $gradient = empty($segments) ? '#ddd 0deg 360deg' : implode(', ', $segments);
 
-// Add a pie chart section with real data
-echo '<div style="position: fixed; top: 100px; right: 20px; width: 350px; background: white; border: 2px solid #007cba; border-radius: 10px; padding: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 1000;">';
-echo '<h3 style="margin: 0 0 15px 0; color: #007cba; text-align: center;">📊 Assets Pie Chart</h3>';
+// Add tabbed interface CSS and JavaScript
+echo '<style>
+.dashboard-tabs {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 20px;
+}
+.tab-button {
+    background: none;
+    border: none;
+    padding: 15px 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+.tab-button:hover {
+    background: #e9ecef;
+    color: #333;
+}
+.tab-button.active {
+    color: #007cba;
+    border-bottom-color: #007cba;
+    background: white;
+}
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+.dashboard {
+    max-height: 800px !important;
+    overflow-y: auto;
+}
+.grid-stack {
+    max-height: 700px !important;
+    overflow-y: auto;
+}
+.grid-stack-item {
+    min-height: 120px !important;
+}
+.grid-stack-item .card {
+    min-height: 100px !important;
+}
+</style>';
 
-// Pie chart using real data
+// Create tabbed interface
+echo '<div class="dashboard-tabs">';
+echo '<button class="tab-button active" onclick="switchTab(\'original\', this)">Standard View</button>';
+echo '<button class="tab-button" onclick="switchTab(\'enhanced\', this)">Analytics View</button>';
+echo '<button class="tab-button" onclick="switchTab(\'maintenance\', this)">Maintenance View</button>';
+echo '</div>';
+
+// Tab 1: Original Dashboard
+echo '<div id="original-tab" class="tab-content active">';
+$grid = new Glpi\Dashboard\Grid($default);
+$grid->showDefault();
+echo '</div>';
+
+// Tab 2: Enhanced Dashboard
+echo '<div id="enhanced-tab" class="tab-content">';
+
+// Add comprehensive dashboard enhancements below the main grid
+echo '<div style="max-width: 1200px; margin: 40px auto; padding: 20px;">';
+
+// Row 1: Summary Cards
+echo '<div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">';
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">';
+echo '<h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Total Assets</h3>';
+echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $total_assets . '</div>';
+echo '</div>';
+
+$active_assets = array_sum(array_slice($asset_counts, 0, 3)); // Computers + Monitors + Printers
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">';
+echo '<h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Active Hardware</h3>';
+echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $active_assets . '</div>';
+echo '</div>';
+
+$software_count = ($asset_counts['Software'] ?? 0) + ($asset_counts['SoftwareLicense'] ?? 0);
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">';
+echo '<h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Software & Licenses</h3>';
+echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $software_count . '</div>';
+echo '</div>';
+echo '</div>';
+
+// Row 2: Charts Section
+echo '<div style="display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">';
+
+// Pie Chart
+echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem; text-align: center;"> Asset Distribution</h3>';
+echo '<div style="display: flex; align-items: center; gap: 25px;">';
+
 if ($total_assets > 0) {
-    echo '<div style="width: 200px; height: 200px; border-radius: 50%; margin: 0 auto 15px; background: conic-gradient(' . $gradient . '); border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.1);"></div>';
+    echo '<div style="width: 180px; height: 180px; border-radius: 50%; background: conic-gradient(' . $gradient . '); flex-shrink: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2);"></div>';
 } else {
-    echo '<div style="width: 200px; height: 200px; border-radius: 50%; margin: 0 auto 15px; background: #f0f0f0; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; color: #666; font-size: 14px;">No Data</div>';
+    echo '<div style="width: 180px; height: 180px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #666; font-size: 14px; flex-shrink: 0;">No Data</div>';
 }
 
-// Legend with real data
+echo '<div style="flex: 1;">';
 foreach ($asset_types as $class => $info) {
     $count = $asset_counts[$class];
     if ($count > 0) {
-        echo '<div style="display: flex; align-items: center; margin: 5px 0; font-size: 12px;">';
-        echo '<div style="width: 12px; height: 12px; background: ' . $info['color'] . '; border-radius: 2px; margin-right: 8px;"></div>';
-        echo '<span><strong>' . $info['label'] . ':</strong> ' . $count . '</span>';
+        $percentage = round(($count / $total_assets) * 100, 1);
+        echo '<div style="display: flex; align-items: center; justify-content: space-between; margin: 8px 0; font-size: 14px; padding: 5px 0;">';
+        echo '<div style="display: flex; align-items: center;">';
+        echo '<div style="width: 16px; height: 16px; background: ' . $info['color'] . '; border-radius: 3px; margin-right: 10px;"></div>';
+        echo '<span><strong>' . $info['label'] . '</strong></span>';
+        echo '</div>';
+        echo '<span style="color: #666;">' . $count . ' (' . $percentage . '%)</span>';
         echo '</div>';
     }
 }
-
-if ($total_assets == 0) {
-    echo '<div style="text-align: center; color: #666; font-style: italic; font-size: 12px;">No assets found in current entities</div>';
-} else {
-    echo '<div style="text-align: center; margin-top: 10px; font-size: 11px; color: #666;">Total: ' . $total_assets . ' assets</div>';
-}
-
-echo '<button onclick="this.parentElement.style.display=\'none\'" style="position: absolute; top: 5px; right: 5px; background: #dc3545; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer;">×</button>';
+echo '</div>';
+echo '</div>';
 echo '</div>';
 
-// Display the original dashboard
-$grid = new Glpi\Dashboard\Grid($default);
-$grid->showDefault();
+// Bar Chart using Chart.js
+echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem; text-align: center;"> Asset Breakdown</h3>';
+echo '<canvas id="assetBarChart" width="400" height="200"></canvas>';
+echo '</div>';
+echo '</div>';
+
+// Row 3: Additional Info
+echo '<div style="display: flex; gap: 20px; flex-wrap: wrap;">';
+
+// Asset Status Table
+echo '<div style="flex: 1; min-width: 400px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem;"> Asset Summary</h3>';
+echo '<table style="width: 100%; border-collapse: collapse;">';
+echo '<thead><tr style="background: #f8f9fa;"><th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Category</th><th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;">Count</th><th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;">Percentage</th></tr></thead>';
+echo '<tbody>';
+foreach ($asset_types as $class => $info) {
+    $count = $asset_counts[$class];
+    $percentage = $total_assets > 0 ? round(($count / $total_assets) * 100, 1) : 0;
+    $row_bg = $count > 0 ? '#fff' : '#f8f9fa';
+    echo '<tr style="background: ' . $row_bg . ';">';
+    echo '<td style="padding: 10px; border-bottom: 1px solid #dee2e6;"><div style="display: flex; align-items: center;"><div style="width: 12px; height: 12px; background: ' . $info['color'] . '; border-radius: 2px; margin-right: 8px;"></div>' . $info['label'] . '</div></td>';
+    echo '<td style="padding: 10px; text-align: center; border-bottom: 1px solid #dee2e6; font-weight: bold;">' . $count . '</td>';
+    echo '<td style="padding: 10px; text-align: center; border-bottom: 1px solid #dee2e6;">' . $percentage . '%</td>';
+    echo '</tr>';
+}
+echo '</tbody></table>';
+echo '</div>';
+
+// Quick Stats
+echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem;"> Quick Stats</h3>';
+echo '<div style="margin-bottom: 15px; padding: 15px; background: #e3f2fd; border-radius: 8px;">';
+echo '<div style="font-size: 1.1rem; color: #1976d2; margin-bottom: 5px;">Most Common Asset</div>';
+$max_class = array_keys($asset_counts, max($asset_counts))[0];
+$max_label = $asset_types[$max_class]['label'] ?? 'N/A';
+echo '<div style="font-weight: bold; color: #333;">' . $max_label . ' (' . max($asset_counts) . ' items)</div>';
+echo '</div>';
+
+echo '<div style="margin-bottom: 15px; padding: 15px; background: #f3e5f5; border-radius: 8px;">';
+echo '<div style="font-size: 1.1rem; color: #7b1fa2; margin-bottom: 5px;">Categories with Assets</div>';
+echo '<div style="font-weight: bold; color: #333;">' . count(array_filter($asset_counts)) . ' out of ' . count($asset_types) . '</div>';
+echo '</div>';
+
+if ($total_assets > 0) {
+    $avg_per_category = round($total_assets / count(array_filter($asset_counts)), 1);
+    echo '<div style="padding: 15px; background: #e8f5e8; border-radius: 8px;">';
+    echo '<div style="font-size: 1.1rem; color: #388e3c; margin-bottom: 5px;">Average per Category</div>';
+    echo '<div style="font-weight: bold; color: #333;">' . $avg_per_category . ' assets</div>';
+    echo '</div>';
+}
+echo '</div>';
+echo '</div>';
+
+echo '</div>';
+
+// Close enhanced tab
+echo '</div>';
+
+// Tab 3: Maintenance View
+echo '<div id="maintenance-tab" class="tab-content">';
+echo '<div style="max-width: 1200px; margin: 40px auto; padding: 20px;">';
+
+// Get maintenance-related data
+$current_date = date('Y-m-d');
+$old_asset_threshold = date('Y-m-d', strtotime('-5 years')); // Assets older than 5 years
+$warranty_threshold = date('Y-m-d', strtotime('+6 months')); // Warranty expiring within 6 months
+
+// Query for old computers
+$old_computers_query = "SELECT COUNT(*) as count FROM `glpi_computers` 
+                       WHERE `buy_date` < '$old_asset_threshold' 
+                       AND `is_deleted` = 0";
+$old_computers_result = $DB->query($old_computers_query);
+$old_computers_count = $old_computers_result ? $DB->fetchAssoc($old_computers_result)['count'] : 0;
+
+// Query for assets with no purchase date (potentially problematic)
+$no_date_query = "SELECT COUNT(*) as count FROM `glpi_computers` 
+                  WHERE (`buy_date` IS NULL OR `buy_date` = '0000-00-00') 
+                  AND `is_deleted` = 0";
+$no_date_result = $DB->query($no_date_query);
+$no_date_count = $no_date_result ? $DB->fetchAssoc($no_date_result)['count'] : 0;
+
+// Query for assets without manufacturer info
+$no_manufacturer_query = "SELECT COUNT(*) as count FROM `glpi_computers` 
+                         WHERE `manufacturers_id` = 0 
+                         AND `is_deleted` = 0";
+$no_manufacturer_result = $DB->query($no_manufacturer_query);
+$no_manufacturer_count = $no_manufacturer_result ? $DB->fetchAssoc($no_manufacturer_result)['count'] : 0;
+
+// Calculate maintenance priority scores
+$critical_count = $old_computers_count;
+$warning_count = $no_date_count + $no_manufacturer_count;
+$total_maintenance_items = $critical_count + $warning_count;
+
+// Header with summary
+echo '<div style="text-align: center; margin-bottom: 40px;">';
+echo '<h2 style="color: #333; margin-bottom: 10px;"> Asset Maintenance Dashboard</h2>';
+echo '<p style="color: #666; font-size: 16px;">Monitor assets requiring immediate attention and maintenance</p>';
+echo '</div>';
+
+// Alert Summary Cards
+echo '<div style="display: flex; gap: 20px; margin-bottom: 40px; flex-wrap: wrap;">';
+
+// Critical Issues Card
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 6px 20px rgba(255,107,107,0.3);">';
+echo '<div style="font-size: 2.8rem; margin-bottom: 10px;"></div>';
+echo '<h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Critical Issues</h3>';
+echo '<div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 5px;">' . $critical_count . '</div>';
+echo '<div style="font-size: 0.9rem; opacity: 0.9;">Assets need immediate attention</div>';
+echo '</div>';
+
+// Warning Issues Card
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 6px 20px rgba(255,167,38,0.3);">';
+echo '<div style="font-size: 2.8rem; margin-bottom: 10px;"></div>';
+echo '<h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Warning Issues</h3>';
+echo '<div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 5px;">' . $warning_count . '</div>';
+echo '<div style="font-size: 0.9rem; opacity: 0.9;">Assets need review</div>';
+echo '</div>';
+
+// Total Maintenance Card
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 6px 20px rgba(66,165,245,0.3);">';
+echo '<div style="font-size: 2.8rem; margin-bottom: 10px;"></div>';
+echo '<h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Total Issues</h3>';
+echo '<div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 5px;">' . $total_maintenance_items . '</div>';
+echo '<div style="font-size: 0.9rem; opacity: 0.9;">Items requiring attention</div>';
+echo '</div>';
+echo '</div>';
+
+// Detailed Issues Section
+echo '<div style="display: flex; gap: 30px; margin-bottom: 40px; flex-wrap: wrap;">';
+
+// Critical Issues Details
+echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #ff6b6b; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;"></span>Critical Issues</h3>';
+
+if ($old_computers_count > 0) {
+    echo '<div style="padding: 20px; background: #ffebee; border-radius: 10px; margin-bottom: 15px;">';
+    echo '<h4 style="margin: 0 0 10px 0; color: #d32f2f;">Legacy Equipment</h4>';
+    echo '<p style="margin: 0 0 10px 0; color: #666;"><strong>' . $old_computers_count . '</strong> computers are over 5 years old</p>';
+    echo '<p style="margin: 0; font-size: 14px; color: #999;">These assets may have security vulnerabilities and performance issues</p>';
+    echo '</div>';
+}
+
+if ($critical_count == 0) {
+    echo '<div style="text-align: center; padding: 40px; color: #4caf50;">';
+    echo '<div style="font-size: 3rem; margin-bottom: 15px;"></div>';
+    echo '<p style="font-size: 18px; margin: 0;">No critical issues found!</p>';
+    echo '<p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">All assets are in good condition</p>';
+    echo '</div>';
+}
+echo '</div>';
+
+// Warning Issues Details
+echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #ffa726; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;"></span>Warning Issues</h3>';
+
+if ($no_date_count > 0) {
+    echo '<div style="padding: 15px; background: #fff3e0; border-radius: 8px; margin-bottom: 15px;">';
+    echo '<h4 style="margin: 0 0 8px 0; color: #f57c00;">Missing Purchase Date</h4>';
+    echo '<p style="margin: 0; color: #666;"><strong>' . $no_date_count . '</strong> computers have no purchase date</p>';
+    echo '</div>';
+}
+
+if ($no_manufacturer_count > 0) {
+    echo '<div style="padding: 15px; background: #fff3e0; border-radius: 8px; margin-bottom: 15px;">';
+    echo '<h4 style="margin: 0 0 8px 0; color: #f57c00;">Missing Manufacturer</h4>';
+    echo '<p style="margin: 0; color: #666;"><strong>' . $no_manufacturer_count . '</strong> computers have no manufacturer info</p>';
+    echo '</div>';
+}
+
+if ($warning_count == 0) {
+    echo '<div style="text-align: center; padding: 40px; color: #4caf50;">';
+    echo '<div style="font-size: 3rem; margin-bottom: 15px;">✅</div>';
+    echo '<p style="font-size: 18px; margin: 0;">No warnings found!</p>';
+    echo '<p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">Asset data is complete</p>';
+    echo '</div>';
+}
+echo '</div>';
+echo '</div>';
+
+// Recommendations Section
+echo '<div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
+echo '<h3 style="margin: 0 0 25px 0; color: #4caf50; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;"></span>Recommendations</h3>';
+
+echo '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">';
+
+if ($old_computers_count > 0) {
+    echo '<div style="padding: 20px; background: #f1f8e9; border-radius: 10px; border: 1px solid #c8e6c9;">';
+    echo '<h4 style="margin: 0 0 10px 0; color: #2e7d32;">🔄 Plan Equipment Refresh</h4>';
+    echo '<p style="margin: 0; color: #666; font-size: 14px;">Consider upgrading legacy equipment to improve security and performance</p>';
+    echo '</div>';
+}
+
+if ($no_date_count > 0 || $no_manufacturer_count > 0) {
+    echo '<div style="padding: 20px; background: #f1f8e9; border-radius: 10px; border: 1px solid #c8e6c9;">';
+    echo '<h4 style="margin: 0 0 10px 0; color: #2e7d32;"> Complete Asset Data</h4>';
+    echo '<p style="margin: 0; color: #666; font-size: 14px;">Update missing purchase dates and manufacturer information for better tracking</p>';
+    echo '</div>';
+}
+
+echo '<div style="padding: 20px; background: #f1f8e9; border-radius: 10px; border: 1px solid #c8e6c9;">';
+echo '<h4 style="margin: 0 0 10px 0; color: #2e7d32;"> Regular Audits</h4>';
+echo '<p style="margin: 0; color: #666; font-size: 14px;">Schedule monthly asset audits to maintain accurate inventory data</p>';
+echo '</div>';
+
+echo '<div style="padding: 20px; background: #f1f8e9; border-radius: 10px; border: 1px solid #c8e6c9;">';
+echo '<h4 style="margin: 0 0 10px 0; color: #2e7d32;"> Track Lifecycle</h4>';
+echo '<p style="margin: 0; color: #666; font-size: 14px;">Monitor asset age and plan replacements before equipment becomes critical</p>';
+echo '</div>';
+echo '</div>';
+echo '</div>';
+
+echo '</div>';
+echo '</div>';
+
+// JavaScript for tab switching
+echo '<script>
+function switchTab(tabName, buttonElement) {
+    // Hide all tab contents
+    const tabContents = document.querySelectorAll(".tab-content");
+    tabContents.forEach(tab => tab.classList.remove("active"));
+    
+    // Remove active class from all buttons
+    const tabButtons = document.querySelectorAll(".tab-button");
+    tabButtons.forEach(button => button.classList.remove("active"));
+    
+    // Show selected tab content
+    document.getElementById(tabName + "-tab").classList.add("active");
+    
+    // Add active class to clicked button
+    buttonElement.classList.add("active");
+}
+</script>';
+
+// Chart.js Script
+echo '<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>';
+echo '<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById("assetBarChart");
+    if (ctx) {
+        new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: [';
+                
+$labels = [];
+$data = [];
+$colors = [];
+foreach ($asset_types as $class => $info) {
+    if ($asset_counts[$class] > 0) {
+        $labels[] = '"' . $info['label'] . '"';
+        $data[] = $asset_counts[$class];
+        $colors[] = '"' . $info['color'] . '"';
+    }
+}
+echo implode(', ', $labels);
+
+echo '],
+                datasets: [{
+                    label: "Asset Count",
+                    data: [' . implode(', ', $data) . '],
+                    backgroundColor: [' . implode(', ', $colors) . '],
+                    borderWidth: 0,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: "#f0f0f0" }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>';
 
 Html::footer();
