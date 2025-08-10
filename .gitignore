@@ -28,3 +28,6 @@ Thumbs.db
 # Environment files
 .env
 .env.local
+
+# GLPI encryption key
+config/glpicrypt.key
