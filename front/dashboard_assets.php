@@ -81,69 +81,42 @@ global $DB;
 $asset_counts = [];
 $total_assets = 0;
 
-// Define asset types to count
+// Use GLPI's actual table names instead of raw class names
 $asset_types = [
-    'Computer' => ['label' => 'Computers', 'color' => '#FF6B6B'],
-    'Monitor' => ['label' => 'Monitors', 'color' => '#4ECDC4'],
-    'Printer' => ['label' => 'Printers', 'color' => '#45B7D1'],
-    'NetworkEquipment' => ['label' => 'Network devices', 'color' => '#96CEB4'],
-    'Phone' => ['label' => 'Phones', 'color' => '#FFEAA7'],
-    'Software' => ['label' => 'Software', 'color' => '#DDA0DD'],
-    'SoftwareLicense' => ['label' => 'Licenses', 'color' => '#98D8C8']
+    'glpi_computers'         => ['label' => 'Computers', 'color' => '#FF6B6B'],
+    'glpi_monitors'          => ['label' => 'Monitors', 'color' => '#4ECDC4'],
+    'glpi_printers'          => ['label' => 'Printers', 'color' => '#45B7D1'],
+    'glpi_networkequipments' => ['label' => 'Network devices', 'color' => '#96CEB4'],
+    'glpi_phones'            => ['label' => 'Phones', 'color' => '#FFEAA7'],
+    'glpi_softwares'         => ['label' => 'Software', 'color' => '#DDA0DD'],
+    'glpi_softwarelicenses'  => ['label' => 'Licenses', 'color' => '#98D8C8']
 ];
 
-// Count each asset type
-foreach ($asset_types as $class => $info) {
-    if (class_exists($class)) {
-        $item = new $class();
-        $table = $item->getTable();
-        
-        $query = "SELECT COUNT(*) as count FROM `$table`";
-        $conditions = [];
-        
-        // Add entity restriction if needed
-        if ($item->isEntityAssign()) {
-            $entities = $_SESSION['glpiactiveentities'] ?? [0];
-            $conditions[] = "`entities_id` IN (" . implode(',', array_map('intval', $entities)) . ")";
-        }
-        
-        // Add deleted restriction
-        if ($item->maybeDeleted()) {
-            $conditions[] = "`is_deleted` = 0";
-        }
-        
-        if (!empty($conditions)) {
-            $query .= " WHERE " . implode(' AND ', $conditions);
-        }
-        
-        $result = $DB->query($query);
-        if ($result && $row = $DB->fetchAssoc($result)) {
-            $asset_counts[$class] = intval($row['count']);
-            $total_assets += $asset_counts[$class];
-        } else {
-            $asset_counts[$class] = 0;
-        }
+foreach ($asset_types as $table => $info) {
+    $query = "SELECT COUNT(*) as count FROM `$table` WHERE is_deleted = 0";
+    $result = $DB->query($query);
+    if ($result && $row = $DB->fetchAssoc($result)) {
+        $asset_counts[$table] = intval($row['count']);
+        $total_assets += $asset_counts[$table];
     } else {
-        $asset_counts[$class] = 0;
+        $asset_counts[$table] = 0;
     }
 }
 
-// Calculate conic-gradient segments for pie chart
+// Build chart gradient
 $segments = [];
 $current_angle = 0;
-
-foreach ($asset_types as $class => $info) {
-    $count = $asset_counts[$class];
+foreach ($asset_types as $table => $info) {
+    $count = $asset_counts[$table];
     if ($count > 0 && $total_assets > 0) {
         $percentage = ($count / $total_assets) * 100;
         $angle = ($percentage / 100) * 360;
         $end_angle = $current_angle + $angle;
-        
+
         $segments[] = $info['color'] . ' ' . $current_angle . 'deg ' . $end_angle . 'deg';
         $current_angle = $end_angle;
     }
 }
-
 $gradient = empty($segments) ? '#ddd 0deg 360deg' : implode(', ', $segments);
 
 // Add tabbed interface CSS and JavaScript
@@ -205,7 +178,7 @@ echo '</div>';
 
 // Tab 1: Original Dashboard
 echo '<div id="original-tab" class="tab-content active">';
-$grid = new Glpi\Dashboard\Grid($default);
+$grid = new Glpi\Dashboard\Grid(dashboard_key: $default);
 $grid->showDefault();
 echo '</div>';
 
@@ -219,6 +192,7 @@ echo '<div style="max-width: 1200px; margin: 40px auto; padding: 20px;">';
 echo '<div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">';
 echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">';
 echo '<h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Total Assets</h3>';
+
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $total_assets . '</div>';
 echo '</div>';
 
@@ -228,7 +202,7 @@ echo '<h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Active Hardware</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $active_assets . '</div>';
 echo '</div>';
 
-$software_count = ($asset_counts['Software'] ?? 0) + ($asset_counts['SoftwareLicense'] ?? 0);
+$software_count = ($asset_counts['glpi_softwares'] ?? 0) + ($asset_counts['glpi_softwarelicenses'] ?? 0);
 echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">';
 echo '<h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Software & Licenses</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $software_count . '</div>';
@@ -330,152 +304,223 @@ echo '</div>';
 echo '<div id="maintenance-tab" class="tab-content">';
 echo '<div style="max-width: 1200px; margin: 40px auto; padding: 20px;">';
 
-// Get maintenance-related data
-$current_date = date('Y-m-d');
-$old_asset_threshold = date('Y-m-d', strtotime('-5 years')); // Assets older than 5 years
-$warranty_threshold = date('Y-m-d', strtotime('+6 months')); // Warranty expiring within 6 months
+// ======================
+// MAINTENANCE TAB DATA
+// ======================
 
-// Query for old computers
-$old_computers_query = "SELECT COUNT(*) as count FROM `glpi_computers` 
-                       WHERE `buy_date` < '$old_asset_threshold' 
-                       AND `is_deleted` = 0";
-$old_computers_result = $DB->query($old_computers_query);
-$old_computers_count = $old_computers_result ? $DB->fetchAssoc($old_computers_result)['count'] : 0;
+// Thresholds
+$current_date        = date('Y-m-d');
+$old_asset_threshold = date('Y-m-d', strtotime('-5 years')); // Older than 5 years
+$warranty_threshold  = date('Y-m-d', strtotime('+6 months')); // Expiring soon
 
-// Query for assets with no purchase date (potentially problematic)
-$no_date_query = "SELECT COUNT(*) as count FROM `glpi_computers` 
-                  WHERE (`buy_date` IS NULL OR `buy_date` = '0000-00-00') 
-                  AND `is_deleted` = 0";
-$no_date_result = $DB->query($no_date_query);
-$no_date_count = $no_date_result ? $DB->fetchAssoc($no_date_result)['count'] : 0;
+// Stats container
+$maintenance_stats = [
+    'old_computers'     => 0,
+    'no_purchase_date'  => 0,
+    'no_manufacturer'   => 0,
+    'expired_warranty'  => 0,
+    'outdated_os'       => 0
+];
 
-// Query for assets without manufacturer info
-$no_manufacturer_query = "SELECT COUNT(*) as count FROM `glpi_computers` 
-                         WHERE `manufacturers_id` = 0 
-                         AND `is_deleted` = 0";
-$no_manufacturer_result = $DB->query($no_manufacturer_query);
-$no_manufacturer_count = $no_manufacturer_result ? $DB->fetchAssoc($no_manufacturer_result)['count'] : 0;
+// Old computers
+$query = "
+    SELECT COUNT(*) AS cnt
+    FROM glpi_computers c
+    LEFT JOIN glpi_infocoms i ON c.id = i.items_id AND i.itemtype = 'Computer'
+    WHERE i.buy_date < '$old_asset_threshold'
+      AND c.is_deleted = 0
+";
+if ($res = $DB->query($query)) {
+    $maintenance_stats['old_computers'] = intval($DB->fetchAssoc($res)['cnt']);
+}
 
-// Calculate maintenance priority scores
-$critical_count = $old_computers_count;
-$warning_count = $no_date_count + $no_manufacturer_count;
+// Missing purchase date
+$query = "
+    SELECT COUNT(*) AS cnt
+    FROM glpi_computers c
+    LEFT JOIN glpi_infocoms i ON c.id = i.items_id AND i.itemtype = 'Computer'
+    WHERE (i.buy_date IS NULL OR i.items_id IS NULL)
+    AND c.is_deleted = 0
+";
+if ($res = $DB->query($query)) {
+    $maintenance_stats['no_purchase_date'] = intval($DB->fetchAssoc($res)['cnt']);
+}
+
+// Missing manufacturer (still from glpi_computers)
+$query = "
+    SELECT COUNT(*) AS cnt
+    FROM glpi_computers
+    WHERE manufacturers_id = 0
+      AND is_deleted = 0
+";
+if ($res = $DB->query($query)) {
+    $maintenance_stats['no_manufacturer'] = intval($DB->fetchAssoc($res)['cnt']);
+}
+
+// Expired warranty
+$query = "
+    SELECT COUNT(*) AS cnt 
+    FROM glpi_computers c
+    JOIN glpi_infocoms i 
+      ON i.items_id = c.id 
+     AND i.itemtype = 'Computer'
+    WHERE i.warranty_date IS NOT NULL
+      AND i.warranty_date < CURDATE()
+      AND c.is_deleted = 0
+";
+if ($res = $DB->query($query)) {
+    $maintenance_stats['expired_warranty'] = intval($DB->fetchAssoc($res)['cnt']);
+}
+
+// Outdated OS
+$query = "
+    SELECT COUNT(*) AS cnt
+    FROM glpi_computers c
+    INNER JOIN glpi_items_operatingsystems ios
+        ON ios.items_id = c.id
+       AND ios.itemtype = 'Computer'
+    INNER JOIN glpi_operatingsystems os
+        ON os.id = ios.operatingsystems_id
+    WHERE os.name LIKE '%Windows 7%'
+       OR os.name LIKE '%Windows XP%'
+";
+if ($res = $DB->query($query)) {
+    $maintenance_stats['outdated_os'] = intval($DB->fetchAssoc($res)['cnt']);
+}
+
+// ======================
+// COUNT CATEGORIES
+// ======================
+$critical_count = $maintenance_stats['old_computers'] 
+                + $maintenance_stats['expired_warranty'] 
+                + $maintenance_stats['outdated_os'];
+
+$warning_count  = $maintenance_stats['no_purchase_date'] 
+                + $maintenance_stats['no_manufacturer'];
+
 $total_maintenance_items = $critical_count + $warning_count;
 
-// Header with summary
+// ======================
+// HEADER
+// ======================
 echo '<div style="text-align: center; margin-bottom: 40px;">';
-echo '<h2 style="color: #333; margin-bottom: 10px;"> Asset Maintenance Dashboard</h2>';
+echo '<h2 style="color: #333; margin-bottom: 10px;">Asset Maintenance Dashboard</h2>';
 echo '<p style="color: #666; font-size: 16px;">Monitor assets requiring immediate attention and maintenance</p>';
 echo '</div>';
 
-// Alert Summary Cards
+// ======================
+// SUMMARY CARDS
+// ======================
 echo '<div style="display: flex; gap: 20px; margin-bottom: 40px; flex-wrap: wrap;">';
 
 // Critical Issues Card
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 6px 20px rgba(255,107,107,0.3);">';
-echo '<div style="font-size: 2.8rem; margin-bottom: 10px;"></div>';
-echo '<h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Critical Issues</h3>';
-echo '<div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 5px;">' . $critical_count . '</div>';
-echo '<div style="font-size: 0.9rem; opacity: 0.9;">Assets need immediate attention</div>';
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
+echo '<h3>Critical Issues</h3>';
+echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $critical_count . '</div>';
+echo '<div>Assets need immediate attention</div>';
 echo '</div>';
 
 // Warning Issues Card
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 6px 20px rgba(255,167,38,0.3);">';
-echo '<div style="font-size: 2.8rem; margin-bottom: 10px;"></div>';
-echo '<h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Warning Issues</h3>';
-echo '<div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 5px;">' . $warning_count . '</div>';
-echo '<div style="font-size: 0.9rem; opacity: 0.9;">Assets need review</div>';
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
+echo '<h3>Warning Issues</h3>';
+echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $warning_count . '</div>';
+echo '<div>Assets need review</div>';
 echo '</div>';
 
-// Total Maintenance Card
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; box-shadow: 0 6px 20px rgba(66,165,245,0.3);">';
-echo '<div style="font-size: 2.8rem; margin-bottom: 10px;"></div>';
-echo '<h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Total Issues</h3>';
-echo '<div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 5px;">' . $total_maintenance_items . '</div>';
-echo '<div style="font-size: 0.9rem; opacity: 0.9;">Items requiring attention</div>';
-echo '</div>';
+// Total Issues Card
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
+echo '<h3>Total Issues</h3>';
+echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $total_maintenance_items . '</div>';
+echo '<div>Items requiring attention</div>';
 echo '</div>';
 
-// Detailed Issues Section
+echo '</div>';
+
+// ======================
+// DETAILED ISSUES
+// ======================
 echo '<div style="display: flex; gap: 30px; margin-bottom: 40px; flex-wrap: wrap;">';
 
-// Critical Issues Details
-echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
-echo '<h3 style="margin: 0 0 25px 0; color: #ff6b6b; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;"></span>Critical Issues</h3>';
+// Critical Issues Column
+echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px;">';
+echo '<h3 style="color: #ff6b6b;">Critical Issues</h3>';
 
-if ($old_computers_count > 0) {
-    echo '<div style="padding: 20px; background: #ffebee; border-radius: 10px; margin-bottom: 15px;">';
-    echo '<h4 style="margin: 0 0 10px 0; color: #d32f2f;">Legacy Equipment</h4>';
-    echo '<p style="margin: 0 0 10px 0; color: #666;"><strong>' . $old_computers_count . '</strong> computers are over 5 years old</p>';
-    echo '<p style="margin: 0; font-size: 14px; color: #999;">These assets may have security vulnerabilities and performance issues</p>';
-    echo '</div>';
+if ($maintenance_stats['old_computers'] > 0) {
+    echo '<div style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4>Legacy Equipment</h4>
+          <p><strong>' . $maintenance_stats['old_computers'] . '</strong> computers are over 5 years old</p>
+          </div>';
 }
-
+if ($maintenance_stats['expired_warranty'] > 0) {
+    echo '<div style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4>Expired Warranty</h4>
+          <p><strong>' . $maintenance_stats['expired_warranty'] . '</strong> computers have expired warranties</p>
+          </div>';
+}
+if ($maintenance_stats['outdated_os'] > 0) {
+    echo '<div style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4>Outdated OS</h4>
+          <p><strong>' . $maintenance_stats['outdated_os'] . '</strong> computers running Windows 7/XP</p>
+          </div>';
+}
 if ($critical_count == 0) {
-    echo '<div style="text-align: center; padding: 40px; color: #4caf50;">';
-    echo '<div style="font-size: 3rem; margin-bottom: 15px;"></div>';
-    echo '<p style="font-size: 18px; margin: 0;">No critical issues found!</p>';
-    echo '<p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">All assets are in good condition</p>';
-    echo '</div>';
+    echo '<p style="color: #4caf50;">No critical issues found!</p>';
 }
 echo '</div>';
 
-// Warning Issues Details
-echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
-echo '<h3 style="margin: 0 0 25px 0; color: #ffa726; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;"></span>Warning Issues</h3>';
+// Warning Issues Column
+echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; border-radius: 15px;">';
+echo '<h3 style="color: #ffa726;">Warning Issues</h3>';
 
-if ($no_date_count > 0) {
-    echo '<div style="padding: 15px; background: #fff3e0; border-radius: 8px; margin-bottom: 15px;">';
-    echo '<h4 style="margin: 0 0 8px 0; color: #f57c00;">Missing Purchase Date</h4>';
-    echo '<p style="margin: 0; color: #666;"><strong>' . $no_date_count . '</strong> computers have no purchase date</p>';
-    echo '</div>';
+if ($maintenance_stats['no_purchase_date'] > 0) {
+    echo '<div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4>Missing Purchase Date</h4>
+          <p><strong>' . $maintenance_stats['no_purchase_date'] . '</strong> computers missing purchase date</p>
+          </div>';
 }
-
-if ($no_manufacturer_count > 0) {
-    echo '<div style="padding: 15px; background: #fff3e0; border-radius: 8px; margin-bottom: 15px;">';
-    echo '<h4 style="margin: 0 0 8px 0; color: #f57c00;">Missing Manufacturer</h4>';
-    echo '<p style="margin: 0; color: #666;"><strong>' . $no_manufacturer_count . '</strong> computers have no manufacturer info</p>';
-    echo '</div>';
+if ($maintenance_stats['no_manufacturer'] > 0) {
+    echo '<div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+          <h4>Missing Manufacturer</h4>
+          <p><strong>' . $maintenance_stats['no_manufacturer'] . '</strong> computers missing manufacturer info</p>
+          </div>';
 }
-
 if ($warning_count == 0) {
-    echo '<div style="text-align: center; padding: 40px; color: #4caf50;">';
-    echo '<div style="font-size: 3rem; margin-bottom: 15px;">✅</div>';
-    echo '<p style="font-size: 18px; margin: 0;">No warnings found!</p>';
-    echo '<p style="font-size: 14px; color: #666; margin: 5px 0 0 0;">Asset data is complete</p>';
-    echo '</div>';
+    echo '<p style="color: #4caf50;">No warning issues found!</p>';
 }
 echo '</div>';
 echo '</div>';
 
-// Recommendations Section
-echo '<div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 6px 25px rgba(0,0,0,0.1);">';
-echo '<h3 style="margin: 0 0 25px 0; color: #4caf50; font-size: 1.4rem; display: flex; align-items: center;"><span style="margin-right: 10px;"></span>Recommendations</h3>';
-
+// ======================
+// RECOMMENDATIONS
+// ======================
+echo '<div style="background: white; padding: 30px; border-radius: 15px;">';
+echo '<h3 style="color: #4caf50;">Recommendations</h3>';
 echo '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">';
 
-if ($old_computers_count > 0) {
-    echo '<div style="padding: 20px; background: #f1f8e9; border-radius: 10px; border: 1px solid #c8e6c9;">';
-    echo '<h4 style="margin: 0 0 10px 0; color: #2e7d32;">🔄 Plan Equipment Refresh</h4>';
-    echo '<p style="margin: 0; color: #666; font-size: 14px;">Consider upgrading legacy equipment to improve security and performance</p>';
-    echo '</div>';
+if ($maintenance_stats['old_computers'] > 0) {
+    echo '<div style="background: #f1f8e9; padding: 20px; border-radius: 10px;">
+          <h4>🔄 Plan Equipment Refresh</h4>
+          <p>Upgrade legacy systems to avoid performance and security issues.</p>
+          </div>';
 }
-
-if ($no_date_count > 0 || $no_manufacturer_count > 0) {
-    echo '<div style="padding: 20px; background: #f1f8e9; border-radius: 10px; border: 1px solid #c8e6c9;">';
-    echo '<h4 style="margin: 0 0 10px 0; color: #2e7d32;"> Complete Asset Data</h4>';
-    echo '<p style="margin: 0; color: #666; font-size: 14px;">Update missing purchase dates and manufacturer information for better tracking</p>';
-    echo '</div>';
+if ($maintenance_stats['expired_warranty'] > 0) {
+    echo '<div style="background: #f1f8e9; padding: 20px; border-radius: 10px;">
+          <h4>🛡 Renew Warranties</h4>
+          <p>Consider extending or replacing assets with expired warranties.</p>
+          </div>';
 }
-
-echo '<div style="padding: 20px; background: #f1f8e9; border-radius: 10px; border: 1px solid #c8e6c9;">';
-echo '<h4 style="margin: 0 0 10px 0; color: #2e7d32;"> Regular Audits</h4>';
-echo '<p style="margin: 0; color: #666; font-size: 14px;">Schedule monthly asset audits to maintain accurate inventory data</p>';
-echo '</div>';
-
-echo '<div style="padding: 20px; background: #f1f8e9; border-radius: 10px; border: 1px solid #c8e6c9;">';
-echo '<h4 style="margin: 0 0 10px 0; color: #2e7d32;"> Track Lifecycle</h4>';
-echo '<p style="margin: 0; color: #666; font-size: 14px;">Monitor asset age and plan replacements before equipment becomes critical</p>';
-echo '</div>';
+if ($maintenance_stats['outdated_os'] > 0) {
+    echo '<div style="background: #f1f8e9; padding: 20px; border-radius: 10px;">
+          <h4>💻 OS Upgrades</h4>
+          <p>Update outdated Windows versions to maintain security compliance.</p>
+          </div>';
+}
+if ($maintenance_stats['no_purchase_date'] > 0 || $maintenance_stats['no_manufacturer'] > 0) {
+    echo '<div style="background: #f1f8e9; padding: 20px; border-radius: 10px;">
+          <h4>📋 Complete Asset Data</h4>
+          <p>Fill missing purchase and manufacturer info for better tracking.</p>
+          </div>';
+}
 echo '</div>';
 echo '</div>';
 

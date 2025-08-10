@@ -32,9 +32,97 @@ INSERT INTO glpi_computers (
 ) VALUES
 (1, 'Workstation-01', 'SN-WKS-0001', 'ALT-WKS-01', 'John Doe', '555-1001', 2, 3, 'Office desktop', NOW(), 0, 1, 1, 1, 1, 0, NULL, 1, 0, 0, 4, 2, 1, 0.0000, UUID(), NOW(), 0, NOW(), NOW()),
 (1, 'Workstation-02', 'SN-WKS-0002', 'ALT-WKS-02', 'Jane Smith', '555-1002', 2, 3, 'Office desktop', NOW(), 0, 1, 1, 1, 1, 0, NULL, 1, 0, 0, 4, 2, 1, 0.0000, UUID(), NOW(), 0, NOW(), NOW()),
-(1, 'Laptop-01',     'SN-LTP-0001', 'ALT-LTP-01', 'Alice Johnson', '555-2001', 2, 3, 'Mobile laptop', NOW(), 0, 2, 2, 2, 2, 0, NULL, 2, 0, 0, 5, 3, 2, 0.0000, UUID(), NOW(), 0, NOW(), NOW()),
-(1, 'Server-01',     'SN-SRV-0001', 'ALT-SRV-01', 'Bob Martin', '555-3001', 2, 3, 'Main server', NOW(), 0, 3, 3, 3, 3, 0, NULL, 3, 0, 0, 6, 4, 3, 0.0000, UUID(), NOW(), 0, NOW(), NOW()),
-(1, 'Server-02',     'SN-SRV-0002', 'ALT-SRV-02', 'Clara Lee', '555-3002', 2, 3, 'Backup server', NOW(), 0, 3, 3, 3, 3, 0, NULL, 3, 0, 0, 6, 4, 3, 0.0000, UUID(), NOW(), 0, NOW(), NOW());
+(1, 'Laptop-01', 'SN-LTP-0001', 'ALT-LTP-01', 'Alice Johnson', '555-2001', 2, 3, 'Mobile laptop', NOW(), 0, 2, 2, 2, 2, 0, NULL, 2, 0, 0, 5, 3, 2, 0.0000, UUID(), NOW(), 0, NOW(), NOW()),
+(1, 'Server-01', 'SN-SRV-0001', 'ALT-SRV-01', 'Bob Martin', '555-3001', 2, 3, 'Main server', NOW(), 0, 3, 3, 3, 3, 0, NULL, 3, 0, 0, 6, 4, 3, 0.0000, UUID(), NOW(), 0, NOW(), NOW()),
+(1, 'Server-02', 'SN-SRV-0002', 'ALT-SRV-02', 'Clara Lee', '555-3002', 2, 3, 'Backup server', NOW(), 0, 3, 3, 3, 3, 0, NULL, 3, 0, 0, 6, 4, 3, 0.0000, UUID(), NOW(), 0, NOW(), NOW()),
+
+(1, 'Laptop-02', 'SN-LTP-0002', 'ALT-LTP-02', 'David Brown', '555-2002', 2, 3, 'Mobile laptop', NOW(), 0, 2, 2, 2, 2, 0, NULL, 2, 0, 0, 5, 3, 2, 0.0000, UUID(), NOW(), 0, NOW(), NOW()),
+(1, 'Workstation-03', 'SN-WKS-0003', 'ALT-WKS-03', 'Emily White', '555-1003', 2, 3, 'Office desktop', NOW(), 0, 1, 1, 1, 1, 0, NULL, 1, 0, 0, 4, 2, 1, 0.0000, UUID(), NOW(), 0, NOW(), NOW()),
+(1, 'Server-03', 'SN-SRV-0003', 'ALT-SRV-03', 'Frank Green', '555-3003', 2, 3, 'Test server', NOW(), 0, 3, 3, 3, 3, 0, NULL, 3, 0, 0, 6, 4, 3, 0.0000, UUID(), NOW(), 0, NOW(), NOW()),
+(1, 'Laptop-03', 'SN-LTP-0003', 'ALT-LTP-03', 'Grace Lee', '555-2003', 2, 3, 'Mobile laptop', NOW(), 0, 2, 2, 2, 2, 0, NULL, 2, 0, 0, 5, 3, 2, 0.0000, UUID(), NOW(), 0, NOW(), NOW());
+
+-- === INFOCOMS (WARRANTY / PURCHASE DETAILS) ===
+-- Link each computer to warranty info (expired, missing and outdated buy dates)
+INSERT INTO glpi_infocoms (
+  items_id,
+  itemtype,
+  entities_id,
+  is_recursive,
+  buy_date,
+  use_date,
+  warranty_duration,
+  warranty_info,
+  suppliers_id,
+  order_number,
+  delivery_number,
+  immo_number,
+  value,
+  warranty_value,
+  sink_time,
+  sink_type,
+  sink_coeff,
+  comment,
+  bill,
+  budgets_id,
+  alert,
+  order_date,
+  delivery_date,
+  inventory_date,
+  warranty_date,
+  date_mod,
+  date_creation,
+  decommission_date,
+  businesscriticities_id
+) VALUES
+(1, 'Computer', 1, 0, '2022-05-10', NULL, 12, NULL, 0, NULL, NULL, NULL, 1000.0000, 0.0000, 0, 0, 0, 'Warranty expired last year', NULL, 0, 0, NULL, NULL, NULL, '2023-05-10', NOW(), NOW(), NULL, 0),
+(2, 'Computer', 1, 0, '2023-02-15', NULL, 12, NULL, 0, NULL, NULL, NULL, 1200.0000, 0.0000, 0, 0, 0, 'Warranty expired earlier this year', NULL, 0, 0, NULL, NULL, NULL, '2024-02-15', NOW(), NOW(), NULL, 0),
+(3, 'Computer', 1, 0, '2024-01-01', NULL, 24, NULL, 0, NULL, NULL, NULL, 1500.0000, 0.0000, 0, 0, 0, 'Warranty still active', NULL, 0, 0, NULL, NULL, NULL, '2026-01-01', NOW(), NOW(), NULL, 0),
+(4, 'Computer', 1, 0, '2021-08-30', NULL, 12, NULL, 0, NULL, NULL, NULL, 5000.0000, 0.0000, 0, 0, 0, 'Server warranty expired long ago', NULL, 0, 0, NULL, NULL, NULL, '2022-08-30', NOW(), NOW(), NULL, 0),
+(5, 'Computer', 1, 0, '2023-06-01', NULL, 24, NULL, 0, NULL, NULL, NULL, 4500.0000, 0.0000, 0, 0, 0, 'Warranty expiring soon', NULL, 0, 0, NULL, NULL, NULL, '2025-06-01', NOW(), NOW(), NULL, 0),
+
+-- Missing buy_date entries for testing
+(6, 'Computer', 1, 0, NULL, NULL, 12, NULL, 0, NULL, NULL, NULL, 1100.0000, 0.0000, 0, 0, 0, 'Missing buy_date', NULL, 0, 0, NULL, NULL, NULL, '2023-09-15', NOW(), NOW(), NULL, 0),
+(7, 'Computer', 1, 0, NULL, NULL, 12, NULL, 0, NULL, NULL, NULL, 1300.0000, 0.0000, 0, 0, 0, 'Invalid buy_date', NULL, 0, 0, NULL, NULL, NULL, '2023-10-20', NOW(), NOW(), NULL, 0),
+
+-- Outdated buy_date entries (older than 5 years)
+(8, 'Computer', 1, 0, '2015-04-12', NULL, 12, NULL, 0, NULL, NULL, NULL, 900.0000, 0.0000, 0, 0, 0, 'Very old computer', NULL, 0, 0, NULL, NULL, NULL, '2016-04-12', NOW(), NOW(), NULL, 0),
+(9, 'Computer', 1, 0, '2014-11-23', NULL, 12, NULL, 0, NULL, NULL, NULL, 850.0000, 0.0000, 0, 0, 0, 'Outdated asset', NULL, 0, 0, NULL, NULL, NULL, '2015-11-23', NOW(), NOW(), NULL, 0);
+
+-- === MANUFACTURERS TEST DATA ===
+INSERT INTO glpi_manufacturers (
+  id,
+  name,
+  comment,
+  date_mod
+) VALUES
+(1, 'Dell', 'Leading PC manufacturer', NOW()),
+(2, 'HP', 'Hewlett-Packard', NOW()),
+(3, 'Lenovo', 'Popular laptop brand', NOW()),
+(4, 'Apple', 'Premium Apple devices', NOW()),
+(5, 'Asus', 'Known for motherboards and laptops', NOW()),
+(6, 'Acer', 'Budget-friendly computers', NOW()),
+(7, 'Microsoft', 'Surface devices and software', NOW());
+
+-- === OPERATING SYSTEMS ===
+INSERT INTO glpi_operatingsystems (name) VALUES
+('Windows XP'),
+('Windows 7'),
+('Windows 10'),
+('Windows 11');
+
+-- === LINK COMPUTERS TO OS ===
+-- Assume the first inserted computer IDs are 1, 2, 3, 4, 5
+-- Map outdated OS to some computers
+INSERT INTO glpi_items_operatingsystems (
+  items_id,
+  itemtype,
+  operatingsystems_id
+) VALUES
+(1, 'Computer', 1), -- Workstation-01 → Windows XP (outdated)
+(2, 'Computer', 2), -- Workstation-02 → Windows 7 (outdated)
+(3, 'Computer', 3), -- Laptop-01 → Windows 10 (supported)
+(4, 'Computer', 4), -- Server-01 → Windows 11 (latest)
+(5, 'Computer', 2); -- Server-02 → Windows 7 (outdated)
 
 -- === MONITORS ===
 INSERT INTO glpi_monitors (
