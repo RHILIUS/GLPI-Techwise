@@ -6,6 +6,7 @@ files/_dumps/
 files/_uploads/
 files/_pictures/
 files/_sessions/
+config/glpicrypt.key
 
 # Sensitive config files
 config_db.php
