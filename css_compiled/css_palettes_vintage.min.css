@@ -38881,3 +38881,204 @@ i.fa-impact-manipulation {
     display: block;
   }
 }
+/* TECHWISE Custom Logo Override */
+.page .glpi-logo {
+    background: none !important;
+    height: 55px;
+    width: 150px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    font-weight: bold !important;
+    font-size: 24px !important;
+    color: #2c3e50 !important;
+    letter-spacing: 2px !important;
+}
+
+.page .glpi-logo::before {
+    content: "TECHWISE" !important;
+    display: block !important;
+}
+
+.page-anonymous .glpi-logo {
+    background: none !important;
+    width: 200px !important;
+    height: 110px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: bold !important;
+    font-size: 36px !important;
+    color: #2c3e50 !important;
+    letter-spacing: 3px !important;
+}
+
+.page-anonymous .glpi-logo::before {
+    content: "TECHWISE" !important;
+    display: block !important;
+}
+
+/* Dark theme override */
+body.theme-dark .page .glpi-logo,
+body.theme-dark .page-anonymous .glpi-logo {
+    color: #ffffff !important;
+}
+
+/* Collapsed navbar logo */
+body.navbar-collapsed .navbar-brand .glpi-logo {
+    background: none !important;
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+    color: #2c3e50 !important;
+    letter-spacing: 1px !important;
+}
+
+body.navbar-collapsed .navbar-brand .glpi-logo::before {
+    content: "TW" !important;
+    display: block !important;
+}
+/* TECHWISE Custom Logo Override */
+.page .glpi-logo {
+    background: none !important;
+    height: 55px;
+    width: 150px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    font-weight: bold !important;
+    font-size: 24px !important;
+    color: #2c3e50 !important;
+    letter-spacing: 2px !important;
+}
+
+.page .glpi-logo::before {
+    content: "TECHWISE" !important;
+    display: block !important;
+}
+
+.page-anonymous .glpi-logo {
+    background: none !important;
+    width: 200px !important;
+    height: 110px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: bold !important;
+    font-size: 36px !important;
+    color: #2c3e50 !important;
+    letter-spacing: 3px !important;
+    margin: 0 auto !important;
+    text-align: center !important;
+}
+
+/* Ensure the parent container doesn't interfere */
+.page-anonymous .text-center .col-md {
+    display: flex !important;
+    justify-content: center !important;
+}
+
+.page-anonymous .glpi-logo::before {
+    content: "TECHWISE" !important;
+    display: block !important;
+}
+
+/* Dark theme override */
+body.theme-dark .page .glpi-logo,
+body.theme-dark .page-anonymous .glpi-logo {
+    color: #ffffff !important;
+}
+
+/* Collapsed navbar logo */
+body.navbar-collapsed .navbar-brand .glpi-logo {
+    background: none !important;
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+    color: #2c3e50 !important;
+    letter-spacing: 1px !important;
+}
+
+body.navbar-collapsed .navbar-brand .glpi-logo::before {
+    content: "TW" !important;
+    display: block !important;
+}
+/* TECHWISE Custom Logo Override */
+.page .glpi-logo {
+    background: none !important;
+    height: 55px;
+    width: 150px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    font-weight: bold !important;
+    font-size: 24px !important;
+    color: #ffffff !important;
+    letter-spacing: 2px !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
+}
+
+.page .glpi-logo::before {
+    content: "TECHWISE" !important;
+    display: block !important;
+}
+
+.page-anonymous .glpi-logo {
+    background: none !important;
+    width: 200px !important;
+    height: 110px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: bold !important;
+    font-size: 36px !important;
+    color: #2c3e50 !important;
+    letter-spacing: 3px !important;
+    margin: 0 auto !important;
+    text-align: center !important;
+}
+
+/* Ensure the parent container doesn't interfere */
+.page-anonymous .text-center .col-md {
+    display: flex !important;
+    justify-content: center !important;
+}
+
+.page-anonymous .glpi-logo::before {
+    content: "TECHWISE" !important;
+    display: block !important;
+}
+
+/* Dark theme override */
+body.theme-dark .page .glpi-logo,
+body.theme-dark .page-anonymous .glpi-logo {
+    color: #ffffff !important;
+}
+
+/* Collapsed navbar logo */
+body.navbar-collapsed .navbar-brand .glpi-logo {
+    background: none !important;
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+    color: #ffffff !important;
+    letter-spacing: 1px !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+}
+
+body.navbar-collapsed .navbar-brand .glpi-logo::before {
+    content: "TW" !important;
+    display: block !important;
+}

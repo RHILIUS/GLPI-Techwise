@@ -388,6 +388,43 @@ if ($res = $DB->query($query)) {
     $maintenance_stats['outdated_os'] = intval($DB->fetchAssoc($res)['cnt']);
 }
 
+// Low Stock Items (Consumables and Cartridges)
+$low_stock_threshold = 5; // Items with stock <= 5 are considered low
+$maintenance_stats['low_stock_consumables'] = 0;
+$maintenance_stats['low_stock_cartridges'] = 0;
+
+// Low stock consumables
+$query = "
+    SELECT COUNT(*) AS cnt
+    FROM glpi_consumableitems ci
+    WHERE ci.is_deleted = 0
+    AND (
+        SELECT COUNT(*) 
+        FROM glpi_consumables c 
+        WHERE c.consumableitems_id = ci.id 
+        AND c.date_out IS NULL
+    ) <= $low_stock_threshold
+";
+if ($res = $DB->query($query)) {
+    $maintenance_stats['low_stock_consumables'] = intval($DB->fetchAssoc($res)['cnt']);
+}
+
+// Low stock cartridges
+$query = "
+    SELECT COUNT(*) AS cnt
+    FROM glpi_cartridgeitems ci
+    WHERE ci.is_deleted = 0
+    AND (
+        SELECT COUNT(*) 
+        FROM glpi_cartridges c 
+        WHERE c.cartridgeitems_id = ci.id 
+        AND c.date_use IS NULL
+    ) <= $low_stock_threshold
+";
+if ($res = $DB->query($query)) {
+    $maintenance_stats['low_stock_cartridges'] = intval($DB->fetchAssoc($res)['cnt']);
+}
+
 // ======================
 // COUNT CATEGORIES
 // ======================
@@ -398,7 +435,10 @@ $critical_count = $maintenance_stats['old_computers']
 $warning_count  = $maintenance_stats['no_purchase_date'] 
                 + $maintenance_stats['no_manufacturer'];
 
-$total_maintenance_items = $critical_count + $warning_count;
+$low_stock_count = $maintenance_stats['low_stock_consumables'] 
+                 + $maintenance_stats['low_stock_cartridges'];
+
+$total_maintenance_items = $critical_count + $warning_count + $low_stock_count;
 
 // ======================
 // HEADER
@@ -427,12 +467,65 @@ echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $warning_count . '<
 echo '<div>Assets need review</div>';
 echo '</div>';
 
+// Low Stock Card
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ab47bc 0%, #8e24aa 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
+echo '<h3>Low Stock</h3>';
+echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $low_stock_count . '</div>';
+echo '<div>Items need restocking</div>';
+echo '</div>';
+
 // Total Issues Card
 echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
 echo '<h3>Total Issues</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $total_maintenance_items . '</div>';
 echo '<div>Items requiring attention</div>';
 echo '</div>';
+
+echo '</div>';
+
+// ======================
+// LOW STOCK SECTION - SIMPLIFIED WITH MODAL
+// ======================
+echo '<div style="margin-bottom: 40px;">';
+
+if ($low_stock_count > 0) {
+    // Subtle summary card - clickable to open modal
+    echo '<div onclick="openLowStockModal()" style="background: white; border: 1px solid #e0e0e0; padding: 25px; border-radius: 15px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" onmouseover="this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.15)\'; this.style.borderColor=\'#ff9800\'" onmouseout="this.style.boxShadow=\'0 2px 8px rgba(0,0,0,0.1)\'; this.style.borderColor=\'#e0e0e0\'">';
+    echo '<div style="display: flex; justify-content: space-between; align-items: center;">';
+    echo '<div>';
+    echo '<h3 style="margin: 0; font-size: 1.3rem; color: #333; display: flex; align-items: center;"><span style="margin-right: 10px; font-size: 1.5rem;"></span>Low Stock Monitoring</h3>';
+    echo '<p style="margin: 8px 0 0 0; color: #666; font-size: 1rem;">' . $low_stock_count . ' items require attention</p>';
+    echo '</div>';
+    echo '<div style="text-align: right;">';
+    echo '<div style="background: #fff3e0; color: #ff9800; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">View Details</div>';
+    echo '</div>';
+    echo '</div>';
+    
+    // Subtle stats bar
+    echo '<div style="display: flex; gap: 20px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #f0f0f0;">';
+    if ($maintenance_stats['low_stock_consumables'] > 0) {
+        echo '<div style="flex: 1; text-align: center; padding: 10px; background: #f8f9fa; border-radius: 8px;">';
+        echo '<div style="font-size: 1.5rem; font-weight: bold; color: #ff9800;">' . $maintenance_stats['low_stock_consumables'] . '</div>';
+        echo '<div style="font-size: 0.85rem; color: #666;">Consumables</div>';
+        echo '</div>';
+    }
+    if ($maintenance_stats['low_stock_cartridges'] > 0) {
+        echo '<div style="flex: 1; text-align: center; padding: 10px; background: #f8f9fa; border-radius: 8px;">';
+        echo '<div style="font-size: 1.5rem; font-weight: bold; color: #ff9800;">' . $maintenance_stats['low_stock_cartridges'] . '</div>';
+        echo '<div style="font-size: 0.85rem; color: #666;">Cartridges</div>';
+        echo '</div>';
+    }
+    echo '</div>';
+    echo '</div>';
+    
+} else {
+    // No low stock - clean success message
+    echo '<div style="background: white; padding: 30px; border-radius: 15px; text-align: center; border: 2px solid #4caf50;">';
+    echo '<div style="color: #4caf50; font-size: 3rem; margin-bottom: 15px;">✅</div>';
+    echo '<h3 style="color: #4caf50; margin: 0 0 10px 0;">All Stock Levels Normal</h3>';
+    echo '<p style="color: #666; margin: 0;">All consumables and cartridges are adequately stocked</p>';
+    echo '</div>';
+}
 
 echo '</div>';
 
@@ -490,6 +583,154 @@ if ($warning_count == 0) {
 echo '</div>';
 echo '</div>';
 
+// Modal for detailed low stock information
+if ($low_stock_count > 0) {
+    echo '
+    <!-- Low Stock Modal -->
+    <div id="lowStockModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+        <div style="background-color: white; margin: 5% auto; padding: 0; width: 90%; max-width: 800px; border-radius: 15px; max-height: 80vh; overflow-y: auto;">
+            <!-- Modal Header -->
+            <div style="background: linear-gradient(135deg, #ab47bc 0%, #8e24aa 100%); color: white; padding: 20px; border-radius: 15px 15px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; font-size: 1.8rem;"> Low Stock Details</h2>
+                <span onclick="closeLowStockModal()" style="color: white; font-size: 28px; font-weight: bold; cursor: pointer; padding: 5px;">&times;</span>
+            </div>
+            
+            <!-- Modal Content -->
+            <div style="padding: 25px;">';
+    
+    // Get all low stock items for modal
+    $critical_items = [];
+    $warning_items = [];
+    
+    // Get consumables
+    if ($maintenance_stats['low_stock_consumables'] > 0) {
+        $query = "
+            SELECT ci.name, ci.ref, 'Consumable' as type,
+                   (SELECT COUNT(*) FROM glpi_consumables c WHERE c.consumableitems_id = ci.id AND c.date_out IS NULL) as stock_count
+            FROM glpi_consumableitems ci
+            WHERE ci.is_deleted = 0
+            HAVING stock_count <= $low_stock_threshold
+            ORDER BY stock_count ASC
+        ";
+        if ($res = $DB->query($query)) {
+            while ($row = $DB->fetchAssoc($res)) {
+                if ($row['stock_count'] == 0) {
+                    $critical_items[] = $row;
+                } else {
+                    $warning_items[] = $row;
+                }
+            }
+        }
+    }
+    
+    // Get cartridges
+    if ($maintenance_stats['low_stock_cartridges'] > 0) {
+        $query = "
+            SELECT ci.name, ci.ref, 'Cartridge' as type,
+                   (SELECT COUNT(*) FROM glpi_cartridges c WHERE c.cartridgeitems_id = ci.id AND c.date_use IS NULL) as stock_count
+            FROM glpi_cartridgeitems ci
+            WHERE ci.is_deleted = 0
+            HAVING stock_count <= $low_stock_threshold
+            ORDER BY stock_count ASC
+        ";
+        if ($res = $DB->query($query)) {
+            while ($row = $DB->fetchAssoc($res)) {
+                if ($row['stock_count'] == 0) {
+                    $critical_items[] = $row;
+                } else {
+                    $warning_items[] = $row;
+                }
+            }
+        }
+    }
+    
+    // Display critical items in modal
+    if (!empty($critical_items)) {
+        echo '<div style="margin-bottom: 30px;">
+                <h3 style="color: #d32f2f; margin-bottom: 15px; display: flex; align-items: center;">
+                    <span style="margin-right: 10px;"></span>Out of Stock
+                </h3>
+                <div style="display: grid; gap: 10px;">';
+        
+        foreach ($critical_items as $item) {
+            echo '<div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #fff3f3; border-radius: 10px;">
+                    <div>
+                        <strong style="color: #333; font-size: 1rem;">' . $item['name'] . '</strong>';
+            if ($item['ref']) echo '<br><span style="color: #666; font-size: 0.85rem;">Reference: ' . $item['ref'] . '</span>';
+            echo '<br><span style="color: #666; font-size: 0.85rem; background: #e3f2fd; padding: 2px 8px; border-radius: 12px;">' . $item['type'] . '</span>
+                    </div>
+                    <div style="background: #d32f2f; color: white; padding: 6px 12px; border-radius: 15px; font-weight: 600; font-size: 0.9rem;">
+                        0 units
+                    </div>
+                </div>';
+        }
+        echo '</div></div>';
+    }
+    
+    // Display warning items in modal
+    if (!empty($warning_items)) {
+        echo '<div style="margin-bottom: 20px;">
+                <h3 style="color: #f57c00; margin-bottom: 15px; display: flex; align-items: center;">
+                    <span style="margin-right: 10px;"></span>Low Stock
+                </h3>
+                <div style="display: grid; gap: 10px;">';
+        
+        foreach ($warning_items as $item) {
+            $urgency_color = $item['stock_count'] <= 2 ? '#ff9800' : '#ff7043';
+            echo '<div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #fffbf0; border-radius: 10px;">
+                    <div>
+                        <strong style="color: #333; font-size: 1rem;">' . $item['name'] . '</strong>';
+            if ($item['ref']) echo '<br><span style="color: #666; font-size: 0.85rem;">Reference: ' . $item['ref'] . '</span>';
+            echo '<br><span style="color: #666; font-size: 0.85rem; background: #e3f2fd; padding: 2px 8px; border-radius: 12px;">' . $item['type'] . '</span>
+                    </div>
+                    <div style="background: ' . $urgency_color . '; color: white; padding: 6px 12px; border-radius: 15px; font-weight: 600; font-size: 0.9rem;">
+                        ' . $item['stock_count'] . ' units
+                    </div>
+                </div>';
+        }
+        echo '</div></div>';
+    }
+    
+    echo '    <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
+                    <button onclick="closeLowStockModal()" style="background: #666; color: white; border: none; padding: 10px 25px; border-radius: 20px; font-size: 0.95rem; cursor: pointer; transition: background 0.2s ease;" onmouseover="this.style.background=\'#555\'" onmouseout="this.style.background=\'#666\'">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>';
+}
+
+// Add JavaScript for modal functionality
+echo '<script>
+function openLowStockModal() {
+    document.getElementById("lowStockModal").style.display = "block";
+    document.body.style.overflow = "hidden"; // Prevent background scrolling
+}
+
+function closeLowStockModal() {
+    document.getElementById("lowStockModal").style.display = "none";
+    document.body.style.overflow = "auto"; // Restore scrolling
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+    var modal = document.getElementById("lowStockModal");
+    if (event.target == modal) {
+        closeLowStockModal();
+    }
+}
+
+// Close modal with Escape key
+document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") {
+        closeLowStockModal();
+    }
+});
+</script>';
+
+// ======================
+// RECOMMENDATIONS
 // ======================
 // RECOMMENDATIONS
 // ======================
@@ -519,6 +760,12 @@ if ($maintenance_stats['no_purchase_date'] > 0 || $maintenance_stats['no_manufac
     echo '<div style="background: #f1f8e9; padding: 20px; border-radius: 10px;">
           <h4>📋 Complete Asset Data</h4>
           <p>Fill missing purchase and manufacturer info for better tracking.</p>
+          </div>';
+}
+if ($low_stock_count > 0) {
+    echo '<div style="background: #f1f8e9; padding: 20px; border-radius: 10px;">
+          <h4>📦 Restock Supplies</h4>
+          <p>Order consumables and cartridges before they run out completely.</p>
           </div>';
 }
 echo '</div>';
