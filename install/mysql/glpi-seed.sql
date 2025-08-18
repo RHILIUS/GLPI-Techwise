@@ -116,17 +116,17 @@ INSERT INTO glpi_states (
   is_visible_appliance, is_visible_databaseinstance, is_visible_cable, is_visible_unmanaged,
   date_mod, date_creation
 ) VALUES
-  ('In Use', 0, 1, 'Currently assigned and operational', 0, 'In Use', 1, '', '',
+  ('In Use', 0, 0, 'Currently assigned and operational', 0, 'In Use', 1, '', '',
    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
    1, 1, 1, 1, 1, 1, 1, 1,
    NOW(), NOW()),
 
-  ('In Stock', 0, 1, 'Available in storage', 0, 'In Stock', 1, '', '',
+  ('In Stock', 0, 0, 'Available in storage', 0, 'In Stock', 1, '', '',
    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
    1, 1, 1, 1, 1, 1, 1, 1,
    NOW(), NOW()),
 
-  ('Retired', 0, 1, 'Decommissioned or retired asset', 0, 'Retired', 1, '', '',
+  ('Retired', 0, 0, 'Decommissioned or retired asset', 0, 'Retired', 1, '', '',
    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
    1, 1, 1, 1, 1, 1, 1, 1,
    NOW(), NOW());
@@ -161,42 +161,42 @@ INSERT INTO glpi_deviceprocessormodels (name) VALUES
 -- Add processors
 INSERT INTO glpi_deviceprocessors (designation, deviceprocessormodels_id, manufacturers_id, entities_id)
 VALUES
-  ('Intel Core i7-11700', 1, 1, 1),
-  ('Intel Xeon E5-2620', 2, 1, 1),
-  ('Apple M1', 3, 4, 1);
+  ('Intel Core i7-11700', 1, 1, 0),
+  ('Intel Xeon E5-2620', 2, 1, 0),
+  ('Apple M1', 3, 4, 0);
 
 -- Link processors to computers
 INSERT INTO glpi_items_deviceprocessors (items_id, itemtype, deviceprocessors_id, entities_id, nbcores, nbthreads)
 VALUES
-  (1, 'Computer', 1, 1, 8, 16),
-  (2, 'Computer', 1, 1, 8, 16),
-  (3, 'Computer', 1, 1, 8, 16),
-  (4, 'Computer', 2, 1, 12, 24),
-  (5, 'Computer', 2, 1, 12, 24),
-  (6, 'Computer', 1, 1, 8, 16),
-  (7, 'Computer', 1, 1, 8, 16),
-  (8, 'Computer', 3, 1, 8, 8),
-  (9, 'Computer', 3, 1, 8, 8);
+  (1, 'Computer', 1, 0, 8, 16),
+  (2, 'Computer', 1, 0, 8, 16),
+  (3, 'Computer', 1, 0, 8, 16),
+  (4, 'Computer', 2, 0, 12, 24),
+  (5, 'Computer', 2, 0, 12, 24),
+  (6, 'Computer', 1, 0, 8, 16),
+  (7, 'Computer', 1, 0, 8, 16),
+  (8, 'Computer', 3, 0, 8, 8),
+  (9, 'Computer', 3, 0, 8, 8);
 
 -- Add memory models
 INSERT INTO glpi_devicememorymodels (name) VALUES ('Kingston 16GB DDR4');
 
 -- Add memory modules
 INSERT INTO glpi_devicememories (designation, size_default, devicememorymodels_id, manufacturers_id, entities_id)
-VALUES ('16GB DDR4 RAM', 16384, 1, 1, 1);
+VALUES ('16GB DDR4 RAM', 16384, 1, 1, 0);
 
 -- Link memory to computers
 INSERT INTO glpi_items_devicememories (items_id, itemtype, devicememories_id, size, entities_id)
 VALUES
-  (1, 'Computer', 1, 16384, 1),
-  (2, 'Computer', 1, 16384, 1),
-  (3, 'Computer', 1, 16384, 1),
-  (4, 'Computer', 1, 16384, 1),
-  (5, 'Computer', 1, 16384, 1),
-  (6, 'Computer', 1, 16384, 1),
-  (7, 'Computer', 1, 16384, 1),
-  (8, 'Computer', 1, 16384, 1),
-  (9, 'Computer', 1, 16384, 1);
+  (1, 'Computer', 1, 16384, 0),
+  (2, 'Computer', 1, 16384, 0),
+  (3, 'Computer', 1, 16384, 0),
+  (4, 'Computer', 1, 16384, 0),
+  (5, 'Computer', 1, 16384, 0),
+  (6, 'Computer', 1, 16384, 0),
+  (7, 'Computer', 1, 16384, 0),
+  (8, 'Computer', 1, 16384, 0),
+  (9, 'Computer', 1, 16384, 0);
 
 -- === MANUFACTURERS TEST DATA ===
 INSERT INTO glpi_manufacturers (
@@ -333,27 +333,95 @@ VALUES
   ('Subscription', NOW(), NOW(), 0, 1),
   ('Free / Open Source', NOW(), NOW(), 0, 1);
 
--- === SOFTWARE LICENSES ===
+-- === SOFTWARE LICENSES SEEDER ===
 INSERT INTO glpi_softwarelicenses (
-  id, softwares_id, entities_id, name, serial, number, comment,
-  expire, softwarelicensetypes_id, is_recursive, is_valid, is_deleted,
-  date_mod, date_creation
-)
-VALUES
-  (1, 1, 0, 'Office 2021 Volume License', 'XXXXX-XXXXX-XXXXX-XXXXX', 50,
-   'Volume licensing for Office', NULL, 1, 1, 1, 0, NOW(), NOW()),
+  id,
+  softwares_id,
+  softwarelicenses_id,
+  completename,
+  level,
+  ancestors_cache,
+  sons_cache,
+  entities_id,
+  is_recursive,
+  number,
+  softwarelicensetypes_id,
+  name,
+  serial,
+  otherserial,               -- Inventory/Asset Number
+  softwareversions_id_buy,
+  softwareversions_id_use,
+  expire,
+  comment,
+  date_mod,
+  is_valid,
+  date_creation,
+  is_deleted,
+  locations_id,
+  users_id_tech,
+  users_id,
+  groups_id_tech,
+  groups_id,
+  is_helpdesk_visible,
+  is_template,
+  template_name,
+  states_id,
+  manufacturers_id,
+  contact,
+  contact_num,
+  allow_overquota,
+  pictures
+) VALUES
+-- Office
+(1, 1, 0, 'Office 2021 Volume License', 0, NULL, NULL, 0, 1, 50, 1,
+ 'Office 2021 Volume License',
+ 'XXXXX-XXXXX-XXXXX-XXXXX', 'INV-OFF-001', -- otherserial = Inventory Number
+ 0, 0, NULL,
+ 'Volume licensing for Office',
+ NOW(), 1, NOW(), 0,
+ 1, 0, 0, 0, 0, 1, 0, NULL,
+ 0, 0, 'Microsoft', 'support@microsoft.com', 0, NULL),
 
-  (2, 2, 0, 'Adobe Photoshop CC License', 'ADOBE-1234-5678-9876', 25,
-   'Creative Cloud subscription', '2025-12-31', 1, 1, 1, 0, NOW(), NOW()),
+-- Adobe Photoshop
+(2, 2, 0, 'Adobe Photoshop CC License', 0, NULL, NULL, 0, 1, 25, 1,
+ 'Adobe Photoshop CC License',
+ 'ADOBE-1234-5678-9876', 'INV-ADOBE-002',
+ 0, 0, '2025-12-31',
+ 'Creative Cloud subscription',
+ NOW(), 1, NOW(), 0,
+ 1, 0, 0, 0, 0, 1, 0, NULL,
+ 0, 0, 'Adobe', 'support@adobe.com', 0, NULL),
 
-  (3, 3, 0, 'VS Code Free License', NULL, 30,
-   'Open-source MIT license', NULL, 1, 1, 1, 0, NOW(), NOW()),
+-- VS Code
+(3, 3, 0, 'VS Code Free License', 0, NULL, NULL, 0, 1, 30, 1,
+ 'VS Code Free License',
+ NULL, 'INV-VSC-003',
+ 0, 0, NULL,
+ 'Open-source MIT license',
+ NOW(), 1, NOW(), 0,
+ 1, 0, 0, 0, 0, 1, 0, NULL,
+ 0, 0, 'Microsoft', 'opensource@microsoft.com', 0, NULL),
 
-  (4, 4, 0, 'Google Chrome Free License', NULL, 51,
-   'Free software', NULL, 1, 1, 1, 0, NOW(), NOW()),
+-- Google Chrome
+(4, 4, 0, 'Google Chrome Free License', 0, NULL, NULL, 0, 1, 51, 1,
+ 'Google Chrome Free License',
+ NULL, 'INV-GC-004',
+ 0, 0, NULL,
+ 'Free software',
+ NOW(), 1, NOW(), 0,
+ 1, 0, 0, 0, 0, 1, 0, NULL,
+ 0, 0, 'Google', 'support@google.com', 0, NULL),
 
-  (5, 5, 0, 'Mozilla Firefox Free License', NULL, 65,
-   'Free software', NULL, 1, 1, 1, 0, NOW(), NOW());
+-- Mozilla Firefox
+(5, 5, 0, 'Mozilla Firefox Free License', 0, NULL, NULL, 0, 1, 65, 1,
+ 'Mozilla Firefox Free License',
+ NULL, 'INV-FF-005',
+ 0, 0, NULL,
+ 'Free software',
+ NOW(), 1, NOW(), 0,
+ 1, 0, 0, 0, 0, 1, 0, NULL,
+ 0, 0, 'Mozilla', 'support@mozilla.org', 0, NULL);
+
 
 INSERT INTO glpi_items_softwareversions (
    items_id,          -- the computer id
@@ -580,8 +648,8 @@ INSERT INTO glpi_consumables (
   entities_id, consumableitems_id,
   date_in, date_out, itemtype, items_id, date_mod, date_creation
 ) VALUES
-(1, 1, '2025-08-01', NULL, NULL, 0, NOW(), NOW()),  -- Paper
-(1, 2, '2025-08-02', NULL, NULL, 0, NOW(), NOW());  -- Staples
+(0, 1, '2025-08-01', NULL, NULL, 0, NOW(), NOW()),  -- Paper
+(0, 2, '2025-08-02', NULL, NULL, 0, NOW(), NOW());  -- Staples
 
 -- === PHONETYPES ===
 INSERT INTO glpi_phonetypes (name, date_mod, date_creation)
@@ -836,11 +904,11 @@ INSERT INTO glpi_items_devicesimcards (
   locations_id, lines_id, users_id, groups_id,
   pin, pin2, puk, puk2, msin, comment
 ) VALUES
-(1, 'Computer', 1, 0, 0, 1, 0, 'SIM123456789', 'ALT987654321', 1, 1, 1, 1, 1, '1234', '4321', '11111111', '22222222', 'MSIN001', 'Assigned to work laptop'),
+(1, 'Computer', 1, 0, 0, 0, 0, 'SIM123456789', 'ALT987654321', 1, 1, 1, 1, 1, '1234', '4321', '11111111', '22222222', 'MSIN001', 'Assigned to work laptop'),
 
-(2, 'Phone', 2, 0, 0, 1, 0, 'SIM223456789', 'ALT887654321', 2, 2, 2, 2, 2, '5678', '8765', '33333333', '44444444', 'MSIN002', 'Assigned to field agent'),
+(2, 'Phone', 2, 0, 0, 0, 0, 'SIM223456789', 'ALT887654321', 2, 2, 2, 2, 2, '5678', '8765', '33333333', '44444444', 'MSIN002', 'Assigned to field agent'),
 
-(3, 'Tablet', 3, 0, 0, 1, 0, 'SIM323456789', 'ALT777654321', 1, 3, 3, 3, 3, '9999', '0000', '55555555', '66666666', 'MSIN003', 'Used for remote access');
+(3, 'Tablet', 3, 0, 0, 0, 0, 'SIM323456789', 'ALT777654321', 1, 3, 3, 3, 3, '9999', '0000', '55555555', '66666666', 'MSIN003', 'Used for remote access');
 
 -- =========================
 -- === GLPI ITIL CATEGORIES SEEDER ===
@@ -1133,7 +1201,7 @@ INSERT INTO glpi_changes (
   0,
   0,
   0,
-  2, -- Assigned/In Progress
+  1, -- Assigned/In Progress
   'Replace the outdated UPS in the server room to ensure continuous power backup and prevent equipment damage.',
   NOW(),
   NOW(),
@@ -1241,6 +1309,17 @@ INSERT INTO glpi_recurrentchanges (
   NULL                                                  -- end_date
 );
 
+-- === BUDGET TYPES ===
+INSERT INTO glpi_budgettypes (
+  name,
+  comment,
+  date_mod,
+  date_creation
+) VALUES
+('IT Budget', 'Budget for IT operations', NOW(), NOW()),
+('Hardware Budget', 'Budget for hardware purchases', NOW(), NOW()),
+('Software Budget', 'Budget for software licenses', NOW(), NOW());
+
 -- === BUDGETS ===
 INSERT INTO glpi_budgets (
   name,
@@ -1259,38 +1338,48 @@ INSERT INTO glpi_budgets (
   budgettypes_id
 ) VALUES
 (
-  'IT Budget 2025',            -- name
-  1,                           -- entities_id
-  0,                           -- is_recursive
-  'Budget for IT operations in 2025.', -- comment
-  0,                           -- is_deleted
-  '2025-01-01',                -- begin_date
-  '2025-12-31',                -- end_date
-  10000.0000,                  -- value
-  0,                           -- is_template
-  NULL,                        -- template_name
-  NOW(),                       -- date_mod
-  NOW(),                       -- date_creation
-  0,                           -- locations_id
-  1                            -- budgettypes_id
+  'IT Budget 2025',
+  0,
+  0,
+  'Budget for IT operations in 2025.',
+  0,
+  '2025-01-01',
+  '2025-12-31',
+  10000.0000,
+  0,
+  NULL,
+  NOW(),
+  NOW(),
+  1,    -- Location ID
+  1     -- IT Budget
 ),
 (
-  'Hardware Budget',           -- name
-  1,                           -- entities_id
-  0,                           -- is_recursive
-  'Allocated for hardware upgrades.', -- comment
-  0,                           -- is_deleted
-  '2025-01-01',                -- begin_date
-  '2025-06-30',                -- end_date
-  5000.0000,                   -- value
-  0,                           -- is_template
-  NULL,                        -- template_name
-  NOW(),                       -- date_mod
-  NOW(),                       -- date_creation
-  0,                           -- locations_id
-  1                            -- budgettypes_id
+  'Hardware Budget',
+  0,
+  0,
+  'Allocated for hardware upgrades.',
+  0,
+  '2025-01-01',
+  '2025-06-30',
+  5000.0000,
+  0,
+  NULL,
+  NOW(),
+  NOW(),
+  2,    -- Location ID
+  2     -- Hardware Budget
 );
 
+-- === SUPPLIER TYPES ===
+INSERT INTO glpi_suppliertypes (
+  name,
+  comment,
+  date_mod,
+  date_creation
+) VALUES
+('IT Equipment Supplier', 'Suppliers for IT hardware and peripherals.', NOW(), NOW()),
+('Office Supplies Supplier', 'Suppliers for office stationery and furniture.', NOW(), NOW()),
+('Software Vendor', 'Suppliers for software licenses and subscriptions.', NOW(), NOW());
 
 -- === SUPPLIERS ===
 INSERT INTO glpi_suppliers (
@@ -1316,7 +1405,7 @@ INSERT INTO glpi_suppliers (
   pictures
 ) VALUES
 (
-  1,                          -- entities_id
+  0,                          -- entities_id
   0,                          -- is_recursive
   'Tech Supplies Inc.',       -- name
   1,                          -- suppliertypes_id
@@ -1338,7 +1427,7 @@ INSERT INTO glpi_suppliers (
   NULL                        -- pictures
 ),
 (
-  1,                          -- entities_id
+  0,                          -- entities_id
   0,                          -- is_recursive
   'Office Depot',             -- name
   2,                          -- suppliertypes_id
@@ -1359,6 +1448,28 @@ INSERT INTO glpi_suppliers (
   1,                          -- is_active
   NULL                        -- pictures
 );
+
+-- === CONTACT TYPES ===
+INSERT INTO glpi_contacttypes (
+  name,
+  comment,
+  date_mod,
+  date_creation
+) VALUES
+('IT', 'IT-related contacts', NOW(), NOW()),
+('Procurement', 'Procurement and finance contacts', NOW(), NOW()),
+('HR', 'Human Resources contacts', NOW(), NOW());
+
+-- === USER TITLES ===
+INSERT INTO glpi_usertitles (
+  name,
+  comment,
+  date_mod,
+  date_creation
+) VALUES
+('Manager', 'Manager title', NOW(), NOW()),
+('Officer', 'Officer title', NOW(), NOW()),
+('Staff', 'Staff title', NOW(), NOW());
 
 -- === CONTACTS ===
 INSERT INTO glpi_contacts (
@@ -1386,7 +1497,7 @@ INSERT INTO glpi_contacts (
   pictures
 ) VALUES
 (
-  1,                          -- entities_id
+  0,                          -- entities_id
   0,                          -- is_recursive
   'John Doe',                 -- name
   'John',                     -- firstname
@@ -1410,7 +1521,7 @@ INSERT INTO glpi_contacts (
   NULL                        -- pictures
 ),
 (
-  1,                          -- entities_id
+  0,                          -- entities_id
   0,                          -- is_recursive
   'Jane Smith',               -- name
   'Jane',                     -- firstname
@@ -1432,6 +1543,56 @@ INSERT INTO glpi_contacts (
   NOW(),                      -- date_mod
   NOW(),                      -- date_creation
   NULL                        -- pictures
+);
+
+-- === CONTRACT TYPES ===
+INSERT INTO glpi_contracttypes (
+  name,
+  comment,
+  date_mod,
+  date_creation
+) VALUES
+('Lease', 'Equipment lease contract', NOW(), NOW()),
+('Support', 'IT support contract', NOW(), NOW()),
+('Maintenance', 'Maintenance contract', NOW(), NOW());
+
+-- ====================================
+-- == INSERT SEED DATA: ContractCosts ==
+-- ====================================
+INSERT INTO `glpi_contractcosts` (
+  contracts_id,
+  name,
+  comment,
+  begin_date,
+  end_date,
+  cost,
+  budgets_id,
+  entities_id,
+  is_recursive
+) VALUES
+-- Cost entry for Printer Lease contract
+(
+  1,  -- contracts_id (Printer Lease from glpi_contracts)
+  'Printer Lease Annual Fee',
+  'Annual lease payment for printers in 2025',
+  '2025-01-01',
+  '2025-12-31',
+  1200.00,
+  1,   -- budgets_id
+  0,
+  0
+),
+-- Cost entry for Support Agreement contract
+(
+  2,  -- contracts_id (Support Agreement from glpi_contracts)
+  'IT Support Service Fee',
+  'Yearly support service cost for 2025–2026',
+  '2025-02-01',
+  '2026-01-31',
+  5000.00,
+  2,   -- budgets_id
+  0,
+  0
 );
 
 -- === CONTRACTS ===
@@ -1468,72 +1629,61 @@ INSERT INTO glpi_contracts (
   date_creation
 ) VALUES
 (
-  1,                          -- entities_id
-  0,                          -- is_recursive
-  'Printer Lease',            -- name
-  'PL-2025-001',              -- num
-  1,                          -- contracttypes_id
-  1,                          -- locations_id
-  '2025-01-01',               -- begin_date
-  12,                         -- duration (months)
-  1,                          -- notice (months)
-  0,                          -- periodicity
-  1,                          -- billing (monthly)
-  'Annual printer lease contract for 2025.', -- comment
-  'ACCT-PL001',               -- accounting_number
-  0,                          -- is_deleted
-  '08:00:00',                 -- week_begin_hour
-  '17:00:00',                 -- week_end_hour
-  '09:00:00',                 -- saturday_begin_hour
-  '12:00:00',                 -- saturday_end_hour
-  1,                          -- use_saturday
-  '00:00:00',                 -- sunday_begin_hour
-  '00:00:00',                 -- sunday_end_hour
-  0,                          -- use_sunday
-  5,                          -- max_links_allowed
-  1,                          -- alert
-  1,                          -- renewal
-  NULL,                       -- template_name
-  0,                          -- is_template
-  1,                          -- states_id
-  NOW(),                      -- date_mod
-  NOW()                       -- date_creation
+  0, 0,
+  'Printer Lease', 'PL-2025-001', 1, 1,
+  '2025-01-01', 12, 1, 0, 1,
+  'Annual printer lease contract for 2025.', 'ACCT-PL001',
+  0,
+  '08:00:00', '17:00:00', '09:00:00', '12:00:00', 1,
+  '00:00:00', '00:00:00', 0,
+  5, 1, 1, NULL, 0, 1, NOW(), NOW()
 ),
 (
-  1,                          -- entities_id
-  0,                          -- is_recursive
-  'Support Agreement',        -- name
-  'SA-2025-002',              -- num
-  2,                          -- contracttypes_id
-  2,                          -- locations_id
-  '2025-02-01',               -- begin_date
-  24,                         -- duration (months)
-  2,                          -- notice (months)
-  0,                          -- periodicity
-  1,                          -- billing
-  'IT support services for 2 years.', -- comment
-  'ACCT-SA002',               -- accounting_number
-  0,                          -- is_deleted
-  '09:00:00',                 -- week_begin_hour
-  '18:00:00',                 -- week_end_hour
-  '00:00:00',                 -- saturday_begin_hour
-  '00:00:00',                 -- saturday_end_hour
-  0,                          -- use_saturday
-  '00:00:00',                 -- sunday_begin_hour
-  '00:00:00',                 -- sunday_end_hour
-  0,                          -- use_sunday
-  10,                         -- max_links_allowed
-  1,                          -- alert
-  1,                          -- renewal
-  NULL,                       -- template_name
-  0,                          -- is_template
-  2,                          -- states_id
-  NOW(),                      -- date_mod
-  NOW()                       -- date_creation
+  0, 0,
+  'Support Agreement', 'SA-2025-002', 2, 2,
+  '2025-02-01', 24, 2, 0, 1,
+  'IT support services for 2 years.', 'ACCT-SA002',
+  0,
+  '09:00:00', '18:00:00', '00:00:00', '00:00:00', 0,
+  '00:00:00', '00:00:00', 0,
+  10, 1, 1, NULL, 0, 2, NOW(), NOW()
 );
 
+-- =============================
+-- === SEED DOCUMENT CATEGORIES
+-- =============================
+INSERT INTO glpi_documentcategories (id, name, comment, documentcategories_id, completename, level, date_creation, date_mod)
+VALUES
+-- Root Categories (parent = 0)
+(1, 'Manuals', 'User and technical manuals', 0, 'Manuals', 1, NOW(), NOW()),
+(2, 'Diagrams', 'Network and architecture diagrams', 0, 'Diagrams', 1, NOW(), NOW()),
+(3, 'Reports', 'Incident and activity reports', 0, 'Reports', 1, NOW(), NOW()),
+(4, 'Policies', 'Company and IT policies', 0, 'Policies', 1, NOW(), NOW()),
+(5, 'Contracts', 'Service and vendor contracts', 0, 'Contracts', 1, NOW(), NOW()),
 
--- === DOCUMENTS ===
+-- Subcategories for Manuals
+(6, 'User Manuals', 'End-user guides', 1, 'Manuals > User Manuals', 2, NOW(), NOW()),
+(7, 'Technical Manuals', 'Admin and technical setup guides', 1, 'Manuals > Technical Manuals', 2, NOW(), NOW()),
+
+-- Subcategories for Diagrams
+(8, 'Network Diagrams', 'LAN/WAN diagrams', 2, 'Diagrams > Network Diagrams', 2, NOW(), NOW()),
+(9, 'System Architecture', 'Application and server architecture diagrams', 2, 'Diagrams > System Architecture', 2, NOW(), NOW()),
+
+-- Subcategories for Reports
+(10, 'Incident Reports', 'Security and issue reports', 3, 'Reports > Incident Reports', 2, NOW(), NOW()),
+(11, 'Activity Reports', 'Monthly or weekly activity logs', 3, 'Reports > Activity Reports', 2, NOW(), NOW()),
+
+-- Subcategories for Policies
+(12, 'IT Policies', 'Policies related to IT use', 4, 'Policies > IT Policies', 2, NOW(), NOW()),
+(13, 'HR Policies', 'Employee and HR related policies', 4, 'Policies > HR Policies', 2, NOW(), NOW()),
+
+-- Subcategories for Contracts
+(14, 'Vendor Contracts', 'Contracts with vendors', 5, 'Contracts > Vendor Contracts', 2, NOW(), NOW()),
+(15, 'Service Agreements', 'Service level agreements (SLAs)', 5, 'Contracts > Service Agreements', 2, NOW(), NOW());
+
+-- ==================
+-- == DOCUMENTS SEED
+-- ==================
 INSERT INTO glpi_documents (
   entities_id,
   is_recursive,
@@ -1554,43 +1704,47 @@ INSERT INTO glpi_documents (
   date_creation
 ) VALUES
 (
-  1,                          -- entities_id
-  0,                          -- is_recursive
-  'User Guide',               -- name
-  'user_guide.pdf',           -- filename
-  '/files/user_guide.pdf',    -- filepath
-  1,                          -- documentcategories_id
-  'application/pdf',          -- mime
-  NOW(),                      -- date_mod
-  'Comprehensive user manual.', -- comment
-  0,                          -- is_deleted
-  NULL,                       -- link
-  1,                          -- users_id
-  0,                          -- tickets_id
-  NULL,                       -- sha1sum
-  0,                          -- is_blacklisted
-  'manual',                   -- tag
-  NOW()                       -- date_creation
+  0, 0,
+  'User Guide',
+  'user_guide.pdf',
+  '/files/user_guide.pdf',
+  1,  -- documentcategories_id → Manuals
+  'application/pdf',
+  NOW(),
+  'Comprehensive user manual.',
+  0,
+  'https://docs.example.com/user_guide',
+  1,
+  0,
+  NULL,
+  0,
+  'manual',
+  NOW()
 ),
 (
-  1,                          -- entities_id
-  0,                          -- is_recursive
-  'Network Diagram',          -- name
-  'network_diagram.png',      -- filename
-  '/files/network_diagram.png', -- filepath
-  2,                          -- documentcategories_id
-  'image/png',                -- mime
-  NOW(),                      -- date_mod
-  'Logical and physical network layout.', -- comment
-  0,                          -- is_deleted
-  NULL,                       -- link
-  2,                          -- users_id
-  0,                          -- tickets_id
-  NULL,                       -- sha1sum
-  0,                          -- is_blacklisted
-  'diagram',                  -- tag
-  NOW()                       -- date_creation
+  0, 0,
+  'Network Diagram',
+  'network_diagram.png',
+  '/files/network_diagram.png',
+  2,  -- documentcategories_id → Diagrams
+  'image/png',
+  NOW(),
+  'Logical and physical network layout.',
+  0,
+  'https://docs.example.com/network_diagram',
+  2,
+  0,
+  NULL,
+  0,
+  'diagram',
+  NOW()
 );
+
+-- === DOCUMENT RELATIONS (linking documents to items, e.g. Computer or Ticket) ===
+INSERT INTO glpi_documents_items (documents_id, items_id, itemtype, entities_id, is_recursive, date_mod, users_id, timeline_position, date_creation, date)
+VALUES
+(1, 1, 'Computer', 0, 0, NOW(), 1, 0, NOW(), NOW()),   -- Link User Guide PDF to Computer ID 1
+(2, 2, 'Ticket',   0, 0, NOW(), 2, 0, NOW(), NOW());   -- Link Network Diagram PNG to Ticket ID 2
 
 -- === LINES ===
 INSERT INTO glpi_lines (
@@ -1612,7 +1766,7 @@ INSERT INTO glpi_lines (
 ) VALUES
 (
   'Main Line',      -- name
-  1,                -- entities_id
+  0,                -- entities_id
   0,                -- is_recursive
   0,                -- is_deleted
   '09171234567',    -- caller_num
@@ -1629,7 +1783,7 @@ INSERT INTO glpi_lines (
 ),
 (
   'Backup Line',    -- name
-  1,                -- entities_id
+  0,                -- entities_id
   0,                -- is_recursive
   0,                -- is_deleted
   '09179876543',    -- caller_num
@@ -1644,7 +1798,6 @@ INSERT INTO glpi_lines (
   NOW(),            -- date_mod
   'Backup emergency line'  -- comment
 );
-
 
 -- === CERTIFICATES ===
 INSERT INTO glpi_certificates (
@@ -1681,7 +1834,7 @@ INSERT INTO glpi_certificates (
   'Wildcard SSL',      -- name
   'ABC123456789',      -- serial
   'XYZ987654321',      -- otherserial
-  1,                   -- entities_id
+  0,                   -- entities_id
   0,                   -- is_recursive
   'Wildcard SSL for all subdomains', -- comment
   0,                   -- is_deleted
@@ -1711,7 +1864,7 @@ INSERT INTO glpi_certificates (
   'VPN Cert',          -- name
   'DEF987654321',      -- serial
   'LMN123456789',      -- otherserial
-  1,                   -- entities_id
+  0,                   -- entities_id
   0,                   -- is_recursive
   'VPN client certificate', -- comment
   0,                   -- is_deleted
@@ -1738,7 +1891,6 @@ INSERT INTO glpi_certificates (
   NOW()                 -- date_mod
 );
 
-
 -- === DATA CENTERS ===
 INSERT INTO glpi_datacenters (
   name,
@@ -1752,7 +1904,7 @@ INSERT INTO glpi_datacenters (
 ) VALUES
 (
   'Main DC',         -- name
-  1,                 -- entities_id
+  0,                 -- entities_id
   0,                 -- is_recursive
   1,                 -- locations_id
   0,                 -- is_deleted
@@ -1762,7 +1914,7 @@ INSERT INTO glpi_datacenters (
 ),
 (
   'Backup DC',       -- name
-  1,                 -- entities_id
+  0,                 -- entities_id
   0,                 -- is_recursive
   2,                 -- locations_id
   0,                 -- is_deleted
@@ -1770,7 +1922,6 @@ INSERT INTO glpi_datacenters (
   NOW(),             -- date_creation
   NULL               -- pictures
 );
-
 
 -- === CLUSTERS ===
 INSERT INTO glpi_clusters (
@@ -1790,7 +1941,7 @@ INSERT INTO glpi_clusters (
   date_creation
 ) VALUES
 (
-  1,                  -- entities_id
+  0,                  -- entities_id
   0,                  -- is_recursive
   'VM Cluster 1',     -- name
   UUID(),             -- uuid (generates a random UUID)
@@ -1806,7 +1957,7 @@ INSERT INTO glpi_clusters (
   NOW()               -- date_creation
 ),
 (
-  1,                  -- entities_id
+  0,                  -- entities_id
   0,                  -- is_recursive
   'DB Cluster',       -- name
   UUID(),             -- uuid
@@ -1822,8 +1973,39 @@ INSERT INTO glpi_clusters (
   NOW()               -- date_creation
 );
 
+-- === DOMAIN TYPES SEEDER ===
+INSERT INTO glpi_domaintypes (
+  name,
+  entities_id,
+  is_recursive,
+  comment
+) VALUES
+(
+  'Public Domain',   -- id = 1
+  0,                 -- entities_id
+  0,                 -- is_recursive
+  'Internet-facing domains (e.g., example.com)'
+),
+(
+  'Internal Domain', -- id = 2
+  0,
+  0,
+  'Internal/Private domains (e.g., corp.local, AD domains)'
+),
+(
+  'Test Domain',     -- id = 3
+  0,
+  0,
+  'Domains used for testing or staging environments'
+),
+(
+  'Service Domain',  -- id = 4
+  0,
+  0,
+  'Domains tied to specific services or sub-brands'
+);
 
--- === DOMAINS ===
+-- === DOMAINS UPDATED ===
 INSERT INTO glpi_domains (
   name,
   entities_id,
@@ -1843,12 +2025,12 @@ INSERT INTO glpi_domains (
 ) VALUES
 (
   'example.com',   -- name
-  1,               -- entities_id
+  0,               -- entities_id
   0,               -- is_recursive
-  1,               -- domaintypes_id
+  1,               -- domaintypes_id (e.g., Public)
   '2030-12-31',    -- date_expiration
   '2015-01-01',    -- date_domaincreation
-  0,               -- users_id_tech
+  2,               -- users_id_tech (glpi)
   0,               -- groups_id_tech
   0,               -- is_deleted
   'Public-facing domain for web services.', -- comment
@@ -1860,12 +2042,12 @@ INSERT INTO glpi_domains (
 ),
 (
   'corp.local',    -- name
-  1,               -- entities_id
+  0,               -- entities_id
   0,               -- is_recursive
-  2,               -- domaintypes_id
-  NULL,            -- date_expiration
+  2,               -- domaintypes_id (e.g., Internal)
+  '2035-12-31',    -- date_expiration
   '2010-06-15',    -- date_domaincreation
-  0,               -- users_id_tech
+  4,               -- users_id_tech (tech)
   0,               -- groups_id_tech
   0,               -- is_deleted
   'Internal domain for Active Directory.', -- comment
@@ -1876,6 +2058,15 @@ INSERT INTO glpi_domains (
   NOW()            -- date_creation
 );
 
+-- === APPLIANCE TYPES ===
+INSERT INTO glpi_appliancetypes (entities_id, is_recursive, name, comment, externalidentifier) VALUES
+(0, 0, 'Firewall', 'Appliance providing network security', NULL),
+(0, 0, 'NAS', 'Network-attached storage appliance', NULL);
+
+-- === APPLIANCE ENVIRONMENTS ===
+INSERT INTO glpi_applianceenvironments (name, comment) VALUES
+('Production', 'Used in live/production environment'),
+('Test/Dev', 'Used for testing and development');
 
 -- === APPLIANCES ===
 INSERT INTO glpi_appliances (
@@ -1904,55 +2095,33 @@ INSERT INTO glpi_appliances (
   pictures
 ) VALUES
 (
-  1,                  -- entities_id
-  0,                  -- is_recursive
-  'Firewall Appliance', -- name
-  0,                  -- is_deleted
-  1,                  -- appliancetypes_id
-  'Network edge firewall appliance', -- comment
-  0,                  -- locations_id
-  0,                  -- manufacturers_id
-  0,                  -- applianceenvironments_id
-  0,                  -- users_id
-  0,                  -- users_id_tech
-  0,                  -- groups_id
-  0,                  -- groups_id_tech
-  NOW(),              -- date_mod
-  NOW(),              -- date_creation
-  0,                  -- states_id
-  NULL,               -- externalidentifier
-  'FW123456',         -- serial
-  NULL,               -- otherserial
-  'IT Department',    -- contact
-  '123-456-7890',     -- contact_num
-  1,                  -- is_helpdesk_visible
-  NULL                -- pictures
+  0, 0, 'Firewall Appliance', 0,
+  1, 'Network edge firewall appliance',
+  1, 1, 1, 
+  2, 4, 0, 0,
+  NOW(), NOW(),
+  1, NULL, 'FW123456', NULL,
+  'IT Department', '123-456-7890', 1, NULL
 ),
 (
-  1,                  -- entities_id
-  0,                  -- is_recursive
-  'NAS Appliance',    -- name
-  0,                  -- is_deleted
-  2,                  -- appliancetypes_id
-  'Storage appliance for backup and archiving', -- comment
-  0,                  -- locations_id
-  0,                  -- manufacturers_id
-  0,                  -- applianceenvironments_id
-  0,                  -- users_id
-  0,                  -- users_id_tech
-  0,                  -- groups_id
-  0,                  -- groups_id_tech
-  NOW(),              -- date_mod
-  NOW(),              -- date_creation
-  0,                  -- states_id
-  NULL,               -- externalidentifier
-  'NAS987654',        -- serial
-  NULL,               -- otherserial
-  'Storage Team',     -- contact
-  '987-654-3210',     -- contact_num
-  1,                  -- is_helpdesk_visible
-  NULL                -- pictures
+  0, 0, 'NAS Appliance', 0,
+  2, 'Storage appliance for backup and archiving',
+  2, 2, 2,
+  3, 4, 0, 0,
+  NOW(), NOW(),
+  1, NULL, 'NAS987654', NULL,
+  'Storage Team', '987-654-3210', 1, NULL
 );
+
+-- === APPLIANCES ITEMS (example links to existing items like computers/servers) ===
+INSERT INTO glpi_appliances_items (appliances_id, items_id, itemtype) VALUES
+(1, 1, 'Computer'), -- Firewall linked to Computer ID 1
+(2, 2, 'Computer');   -- NAS linked to Device ID 2
+
+-- === APPLIANCES ITEMS RELATIONS (optional cross-links) ===
+INSERT INTO glpi_appliances_items_relations (appliances_items_id, itemtype, items_id) VALUES
+(1, 'NetworkEquipment', 1), -- Relates Firewall appliance item to a NetworkEquipment
+(2, 'Peripheral', 2);       -- Relates NAS appliance item to a Peripheral
 
 -- === DATABASES ===
 INSERT INTO glpi_databases (
@@ -1971,7 +2140,7 @@ INSERT INTO glpi_databases (
   date_lastbackup
 ) VALUES
 (
-  1,                 -- entities_id
+  0,                 -- entities_id
   0,                 -- is_recursive
   'GLPI DB',         -- name
   2048,              -- size (e.g., 2048 MB)
@@ -1986,7 +2155,7 @@ INSERT INTO glpi_databases (
   NOW()              -- date_lastbackup
 ),
 (
-  1,                 -- entities_id
+  0,                 -- entities_id
   0,                 -- is_recursive
   'Reporting DB',    -- name
   1024,              -- size (e.g., 1024 MB)
@@ -2004,19 +2173,33 @@ INSERT INTO glpi_databases (
 -- === USERS ===
 INSERT INTO glpi_users (
    name, realname, firstname, is_active,
-  locations_id, use_mode, auths_id, authtype,
-  is_deleted, profiles_id, usertitles_id, usercategories_id,
-  is_deleted_ldap, groups_id, users_id_supervisor
+   locations_id, use_mode, auths_id, authtype,
+   is_deleted, profiles_id, usertitles_id, usercategories_id,
+   is_deleted_ldap, groups_id, users_id_supervisor,
+   phone, mobile
 ) VALUES
-  ('admin-1', 'Admin', 'Super', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  ('glpi-1', 'GLPI', 'System', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  ('post-only-1', 'Post', 'Only', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  ('tech-1', 'Tech', 'User', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  ('normal-1', 'Normal', 'User', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  ('glpi-system-1', 'GLPI', 'System', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  ('adminsuper-1', 'Admin', 'Super', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  ('jdoe-1', 'Doe', 'John', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-  ('jsmith-1', 'Smith', 'Jane', 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  ('admin-1', 'Admin', 'Super', 1, FLOOR(1 + RAND()*2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '123-456-1001', '09170001001'),
+  ('glpi-1', 'GLPI', 'System', 1, FLOOR(1 + RAND()*2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '123-456-1002', '09170001002'),
+  ('post-only-1', 'Post', 'Only', 1, FLOOR(1 + RAND()*2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '123-456-1003', '09170001003'),
+  ('tech-1', 'Tech', 'User', 1, FLOOR(1 + RAND()*2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '123-456-1004', '09170001004'),
+  ('normal-1', 'Normal', 'User', 1, FLOOR(1 + RAND()*2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '123-456-1005', '09170001005'),
+  ('glpi-system-1', 'GLPI', 'System', 1, FLOOR(1 + RAND()*2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '123-456-1006', '09170001006'),
+  ('adminsuper-1', 'Admin', 'Super', 1, FLOOR(1 + RAND()*2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '123-456-1007', '09170001007'),
+  ('jdoe-1', 'Doe', 'John', 1, FLOOR(1 + RAND()*2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '123-456-1008', '09170001008'),
+  ('jsmith-1', 'Smith', 'Jane', 1, FLOOR(1 + RAND()*2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '123-456-1009', '09170001009');
+
+  -- === USER EMAILS ===
+INSERT INTO glpi_useremails (users_id, email, is_default)
+VALUES
+  ((SELECT id FROM glpi_users WHERE name='admin-1'), 'admin1@example.com', 1),
+  ((SELECT id FROM glpi_users WHERE name='glpi-1'), 'glpi1@example.com', 1),
+  ((SELECT id FROM glpi_users WHERE name='post-only-1'), 'postonly1@example.com', 1),
+  ((SELECT id FROM glpi_users WHERE name='tech-1'), 'tech1@example.com', 1),
+  ((SELECT id FROM glpi_users WHERE name='normal-1'), 'normal1@example.com', 1),
+  ((SELECT id FROM glpi_users WHERE name='glpi-system-1'), 'glpisystem1@example.com', 1),
+  ((SELECT id FROM glpi_users WHERE name='adminsuper-1'), 'adminsuper1@example.com', 1),
+  ((SELECT id FROM glpi_users WHERE name='jdoe-1'), 'jdoe1@example.com', 1),
+  ((SELECT id FROM glpi_users WHERE name='jsmith-1'), 'jsmith1@example.com', 1);
 
 -- === GROUPS ===
 INSERT INTO glpi_groups (
@@ -2025,10 +2208,10 @@ INSERT INTO glpi_groups (
   is_requester, is_watcher, is_assign, is_task, is_notify, is_itemgroup,
   is_usergroup, is_manager, date_creation
 ) VALUES
-  (0, 0, 'IT Department', NULL, NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, NULL, 1, 1, 1, 1, 1, 1, 1, 1, NULL),
-  (0, 0, 'Support Team', NULL, NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, NULL, 1, 1, 1, 1, 1, 1, 1, 1, NULL),
-  (0, 0, 'Developers', NULL, NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, NULL, 1, 1, 1, 1, 1, 1, 1, 1, NULL),
-  (0, 1, 'Managers', NULL, NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, NULL, 1, 1, 1, 1, 1, 1, 1, 1, NULL);
+  (0, 0, 'IT Department', NULL, NULL, NULL, NULL, NULL, 0, 'IT Department', 0, NULL, NULL, 1, 1, 1, 1, 1, 1, 1, 1, NULL),
+  (0, 0, 'Support Team', NULL, NULL, NULL, NULL, NULL, 0, 'Support Team', 0, NULL, NULL, 1, 1, 1, 1, 1, 1, 1, 1, NULL),
+  (0, 0, 'Developers', NULL, NULL, NULL, NULL, NULL, 0, 'Developers', 0, NULL, NULL, 1, 1, 1, 1, 1, 1, 1, 1, NULL),
+  (0, 1, 'Managers', NULL, NULL, NULL, NULL, NULL, 0, 'Managers', 0, NULL, NULL, 1, 1, 1, 1, 1, 1, 1, 1, NULL);
 
 -- === PROFILES ===
 INSERT INTO glpi_profiles (
@@ -2039,29 +2222,28 @@ INSERT INTO glpi_profiles (
 ) VALUES
   (
     'Super-Admin', 'central', 1, 0, NULL, NULL,
-    NULL, NULL, NULL, 0,
+    NOW(), 'Full access to all features', NULL, 0,
     0, 0, 0, NULL,
-    NULL, NULL
+    NULL, NOW()
   ),
   (
     'Technician', 'helpdesk', 0, 0, NULL, NULL,
-    NULL, NULL, NULL, 0,
+    NOW(), 'Handles tickets and assets', NULL, 0,
     0, 0, 0, NULL,
-    NULL, NULL
+    NULL, NOW()
   ),
   (
     'User', 'central', 0, 0, NULL, NULL,
-    NULL, NULL, NULL, 0,
+    NOW(), 'Basic user with limited rights', NULL, 0,
     0, 0, 0, NULL,
-    NULL, NULL
+    NULL, NOW()
   ),
   (
     'Observer', 'helpdesk', 0, 0, NULL, NULL,
-    NULL, NULL, NULL, 0,
+    NOW(), 'Read-only access', NULL, 0,
     0, 0, 0, NULL,
-    NULL, NULL
+    NULL, NOW()
   );
-
 
 -- === PROJECTS ===
 INSERT INTO glpi_projects (
@@ -2072,18 +2254,18 @@ INSERT INTO glpi_projects (
   projecttemplates_id, is_template, template_name
 ) VALUES
   (
-    'Migration Project', NULL, 1, 0, 0, 0, 0, 
-    0, NULL, NULL, 0, 0, NULL, 
-    NULL, NULL, NULL, 0, 0, 
-    0, NULL, NULL, 0, NULL, 
+    'Migration Project', 'MIG2025', 1, 0, 0, 0, 1, 
+    0, NOW(), NOW(), 0, 0, NULL, 
+    NULL, NULL, NULL, 25, 0, 
+    0, 'Migration from legacy system to new platform', 'Initial setup of migration plan', 0, NOW(), 
     0, 0, NULL
   ),
   (
-    'Upgrade Project', NULL, 1, 0, 0, 0, 0, 
-    0, NULL, NULL, 0, 0, NULL, 
-    NULL, NULL, NULL, 0, 0, 
-    0, NULL, NULL, 0, NULL, 
-    0, 1, NULL
+    'Upgrade Project', 'UPG2025', 1, 0, 0, 0, 1, 
+    0, NOW(), NOW(), 0, 0, NULL, 
+    NULL, NULL, NULL, 50, 0, 
+    0, 'System upgrade to latest stable release', 'Ongoing upgrade activities', 0, NOW(), 
+    0, 0, NULL
   );
 
 -- === REMINDERS ===
@@ -2091,36 +2273,36 @@ INSERT INTO glpi_reminders (
   uuid, date, users_id, name, text, begin, end,
   is_planned, date_mod, state, begin_view_date, end_view_date, date_creation
 ) VALUES
-('a1b2c3d4-e5f6-7890-abcd-000000000001', NOW(), 1, 'Monthly Maintenance', 'Perform routine maintenance on servers', '2025-08-10 09:00:00', '2025-08-10 12:00:00', 1, NOW(), 0, '2025-08-08 00:00:00', '2025-08-10 12:00:00', NOW()),
+('a1b2c3d4-e5f6-7890-abcd-000000000001', NOW(), 2, 'Monthly Maintenance', 'Perform routine maintenance on servers', '2025-08-10 09:00:00', '2025-08-10 12:00:00', 1, NOW(), 0, '2025-08-08 00:00:00', '2025-08-10 12:00:00', NOW()),
 
-('a1b2c3d4-e5f6-7890-abcd-000000000002', NOW(), 2, 'License Renewal', 'Renew antivirus licenses before expiration', '2025-08-15 08:00:00', '2025-08-15 10:00:00', 1, NOW(), 1, '2025-08-10 00:00:00', '2025-08-15 10:00:00', NOW()),
+('a1b2c3d4-e5f6-7890-abcd-000000000002', NOW(), 3, 'License Renewal', 'Renew antivirus licenses before expiration', '2025-08-15 08:00:00', '2025-08-15 10:00:00', 1, NOW(), 1, '2025-08-10 00:00:00', '2025-08-15 10:00:00', NOW()),
 
-('a1b2c3d4-e5f6-7890-abcd-000000000003', NOW(), 3, 'Team Meeting', 'Discuss Q3 project updates', '2025-08-12 14:00:00', '2025-08-12 15:30:00', 1, NOW(), 0, '2025-08-10 00:00:00', '2025-08-12 15:30:00', NOW());
+('a1b2c3d4-e5f6-7890-abcd-000000000003', NOW(), 4, 'Team Meeting', 'Discuss Q3 project updates', '2025-08-12 14:00:00', '2025-08-12 15:30:00', 1, NOW(), 0, '2025-08-10 00:00:00', '2025-08-12 15:30:00', NOW());
 
 -- === RSS FEEDS ===
 INSERT INTO glpi_rssfeeds (
   name, users_id, comment, url, refresh_rate, max_items,
   have_error, is_active, date_mod, date_creation
 ) VALUES
-('GLPI News Feed', 1, 'Official GLPI project updates and news.', 'https://glpi-project.org/news/feed/', 86400, 20, 0, 1, NOW(), NOW()),
+('GLPI News Feed', 2, 'Official GLPI project updates and news.', 'https://glpi-project.org/news/feed/', 86400, 20, 0, 1, NOW(), NOW()),
 
-('TechCrunch - Startups', 2, 'Startup news and articles from TechCrunch.', 'https://techcrunch.com/startups/feed/', 43200, 15, 0, 1, NOW(), NOW()),
+('TechCrunch - Startups', 3, 'Startup news and articles from TechCrunch.', 'https://techcrunch.com/startups/feed/', 43200, 15, 0, 1, NOW(), NOW()),
 
-('Security Weekly', 3, 'Cybersecurity alerts and research from Security Weekly.', 'https://securityweekly.com/feed/', 86400, 25, 0, 1, NOW(), NOW());
+('Security Weekly', 4, 'Cybersecurity alerts and research from Security Weekly.', 'https://securityweekly.com/feed/', 86400, 25, 0, 1, NOW(), NOW());
 
 -- === KNOWLEDGE BASE ===
 INSERT INTO glpi_knowbaseitems (
   name, answer, users_id, date_creation, date_mod
 ) VALUES
-('How to reset password', 'Go to login page and click "Forgot password".', 1, NOW(), NOW()),
-('Printer troubleshooting', 'Check paper tray and toner.', 2, NOW(), NOW());
+('How to reset password', 'Go to login page and click "Forgot password".', 2, NOW(), NOW()),
+('Printer troubleshooting', 'Check paper tray and toner.', 3, NOW(), NOW());
 
 -- === RESERVATIONS ===
 INSERT INTO glpi_reservationitems (itemtype, entities_id, is_recursive, items_id, comment, is_active)
 VALUES
-  ('Computer', 1, 0, 1, 'Workstation-01 available', 1),
-  ('Computer', 1, 0, 2, 'Workstation-02 available', 1),
-  ('Computer', 1, 0, 3, 'Laptop-01 for travel use', 1);
+  ('Computer', 0, 0, 1, 'Workstation-01 available', 1),
+  ('Computer', 0, 0, 2, 'Workstation-02 available', 1),
+  ('Computer', 0, 0, 3, 'Laptop-01 for travel use', 1);
 
 INSERT INTO glpi_reservations (reservationitems_id, begin, end, users_id, comment, `group`)
 VALUES
@@ -2136,17 +2318,27 @@ INSERT INTO glpi_savedsearches (
   last_execution_date, counter
 ) VALUES
 (
-  'Open Tickets', 0, 'Ticket', 1,
+  'Open Tickets', 0, 'Ticket', 2,
   1, 0, 0,
   'status=1&priority=2', 1690000000, 2,
   NOW(), 5
 ),
 (
-  'All Computers', 0, 'Computer', 1,
+  'All Computers', 0, 'Computer', 3,
   1, 0, 0,
   'is_deleted=0', 1690000500, 2,
   NOW(), 12
 );
+
+-- === SAVED SEARCHES USERS ===
+INSERT INTO glpi_savedsearches_users (
+  users_id, itemtype, savedsearches_id
+) VALUES
+  -- Link User 2 to "Open Tickets"
+  (2, 'Ticket', (SELECT id FROM glpi_savedsearches WHERE name = 'Open Tickets' LIMIT 1)),
+  
+  -- Link User 3 to "All Computers"
+  (3, 'Computer', (SELECT id FROM glpi_savedsearches WHERE name = 'All Computers' LIMIT 1));
 
 -- === NOTIFICATION QUEUE ===
 INSERT INTO glpi_queuednotifications (
@@ -2157,38 +2349,42 @@ INSERT INTO glpi_queuednotifications (
   documents, mode, event
 ) VALUES
   (
-    NULL, 0, 1, 0, 0,
-    0, NULL, NULL, NULL, NULL,
-    NULL, NULL, 'admin@example.com', NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL,
-    NULL, 'mail', NULL
+    'Ticket', 1, 1, 0, 0,   -- Notification for Ticket ID 1
+    0, NOW(), NULL, NULL, 'New Ticket Created',
+    'no-reply@example.com', 'GLPI System', 'admin@example.com', 'Administrator', NULL,
+    NULL, NULL, '<p>A new ticket has been created.</p>', 'A new ticket has been created.', '<MSGID-001>',
+    NULL, 'mail', 'ticket_create'
   ),
   (
-    NULL, 0, 2, 0, 0,
-    0, NULL, NULL, NULL, NULL,
-    NULL, NULL, 'support@example.com', NULL, NULL,
-    NULL, NULL, NULL, NULL, NULL,
-    NULL, 'mail', NULL
+    'Ticket', 2, 2, 0, 0,   -- Notification for Ticket ID 2
+    1, NOW(), NULL, NULL, 'Ticket Assigned',
+    'no-reply@example.com', 'GLPI System', 'support@example.com', 'Support Team', NULL,
+    NULL, NULL, '<p>Your ticket has been assigned.</p>', 'Your ticket has been assigned.', '<MSGID-002>',
+    NULL, 'mail', 'ticket_assign'
+  ),
+  (
+    'Computer', 1, 3, 0, 0,  -- Notification for Computer ID 1
+    0, NOW(), NULL, NULL, 'Computer Maintenance Reminder',
+    'no-reply@example.com', 'GLPI System', 'tech@example.com', 'Technician', NULL,
+    NULL, NULL, '<p>Scheduled maintenance reminder.</p>', 'Scheduled maintenance reminder.', '<MSGID-003>',
+    NULL, 'mail', 'computer_maintenance'
   );
 
 -- === LOGS ===
 INSERT INTO glpi_logs (
-  itemtype, items_id, itemtype_link, linked_action, user_name,
-  date_mod, id_search_option, old_value, new_value
+  itemtype, items_id, itemtype_link, linked_action,
+  user_name, date_mod, id_search_option, old_value, new_value
 ) VALUES
-  (
-    'Computer', 1, '', 0, NULL,
-    NOW(), 1, 'old', 'new'
-  ),
-  (
-    'Ticket', 2, '', 0, NULL,
-    NOW(), 2, 'pending', 'closed'
-  );
+  ('Ticket', 1, '', 2,     -- no linked itemtype, just leave empty string
+   'admin', NOW(), 12, 'Pending', 'Solved'),
+
+  ('Computer', 5, '', 2,   -- no linked itemtype, just leave empty string
+   'tech1', NOW(), 3, 'Dell', 'Lenovo');
 
 -- === UNIQUENESS (for field unicity) ===
 INSERT INTO glpi_fieldunicities (name, is_recursive, itemtype, entities_id, fields, is_active, action_refuse, action_notify) VALUES
-  ('Unique Serial', 0, 'Computer', 1, 'serial', 1, 1, 0),
-  ('Unique Email', 1, 'User', 1, 'email', 1, 1, 1);
+  ('Unique Serial', 0, 'Computer', 0, 'serial', 1, 1, 0),
+  ('Unique Email', 1, 'User', 0, 'email', 1, 1, 1);
 
 -- === SERVICE LEVELS ===
 INSERT INTO `glpi_slms` (
