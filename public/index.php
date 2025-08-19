@@ -53,7 +53,7 @@ if (preg_match('/^\/public/', $_SERVER['REQUEST_URI']) !== 1 && $_SERVER['SCRIPT
     // -> if script is located into a `/glpi-alias` alias directory, then `$_SERVER['SCRIPT_NAME']` will be equal to `/glpi-alias/index.php`
     $uri_prefix = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/');
 }
-
+ 
 // Get URI path relative to GLPI (i.e. without alias directory prefix).
 $path       = preg_replace(
     '/^' . preg_quote($uri_prefix, '/') . '/',
