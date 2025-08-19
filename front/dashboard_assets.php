@@ -659,8 +659,11 @@ if ($low_stock_count > 0) {
             if ($item['ref']) echo '<br><span style="color: #666; font-size: 0.85rem;">Reference: ' . $item['ref'] . '</span>';
             echo '<br><span style="color: #666; font-size: 0.85rem; background: #e3f2fd; padding: 2px 8px; border-radius: 12px;">' . $item['type'] . '</span>
                     </div>
-                    <div style="background: #d32f2f; color: white; padding: 6px 12px; border-radius: 15px; font-weight: 600; font-size: 0.9rem;">
-                        0 units
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                        <div style="background: #d32f2f; color: white; padding: 6px 12px; border-radius: 15px; font-weight: 600; font-size: 0.9rem;">
+                            0 units
+                        </div>
+                        <a href="/front/ticket.form.php?content=Low%20stock%20alert%20for%20' . urlencode($item['name']) . '%20(' . urlencode($item['type']) . ')&subject=Low%20Stock%20-%20' . urlencode($item['name']) . '" target="_blank" style="background: #1976d2; color: white; padding: 6px 16px; border-radius: 15px; font-size: 0.9rem; text-decoration: none; font-weight: 600; transition: background 0.2s;">Submit Ticket</a>
                     </div>
                 </div>';
         }
@@ -683,8 +686,11 @@ if ($low_stock_count > 0) {
             if ($item['ref']) echo '<br><span style="color: #666; font-size: 0.85rem;">Reference: ' . $item['ref'] . '</span>';
             echo '<br><span style="color: #666; font-size: 0.85rem; background: #e3f2fd; padding: 2px 8px; border-radius: 12px;">' . $item['type'] . '</span>
                     </div>
-                    <div style="background: ' . $urgency_color . '; color: white; padding: 6px 12px; border-radius: 15px; font-weight: 600; font-size: 0.9rem;">
-                        ' . $item['stock_count'] . ' units
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                        <div style="background: ' . $urgency_color . '; color: white; padding: 6px 12px; border-radius: 15px; font-weight: 600; font-size: 0.9rem;">
+                            ' . $item['stock_count'] . ' units
+                        </div>
+                        <a href="/front/ticket.form.php?content=Low%20stock%20alert%20for%20' . urlencode($item['name']) . '%20(' . urlencode($item['type']) . '),%20current%20stock:%20' . urlencode($item['stock_count']) . '&subject=Low%20Stock%20-%20' . urlencode($item['name']) . '" target="_blank" style="background: #1976d2; color: white; padding: 6px 16px; border-radius: 15px; font-size: 0.9rem; text-decoration: none; font-weight: 600; transition: background 0.2s;">Submit Ticket</a>
                     </div>
                 </div>';
         }
