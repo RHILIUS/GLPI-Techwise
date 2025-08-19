@@ -288,6 +288,20 @@ if ($id > 0) {
         $_REQUEST['items_id'] = [$_REQUEST['itemtype'] => [$_REQUEST['items_id']]];
     }
 
+        // Auto-fill title and description from URL parameters if present
+            if (isset($_GET['title']) && !empty($_GET['title'])) {
+                $_REQUEST['name'] = $_GET['title'];
+            }
+            // Support 'description' as the preferred parameter for ticket description
+            if (isset($_GET['description']) && !empty($_GET['description'])) {
+                $_REQUEST['content'] = $_GET['description'];
+            }
+
+            // Auto-fill opening date to today if not provided
+            if (empty($_REQUEST['date'])) {
+                $_REQUEST['date'] = date('Y-m-d');
+            }
+
     if (isset($_GET['showglobalkanban']) && $_GET['showglobalkanban']) {
         Html::header(sprintf(__('%s Kanban'), Ticket::getTypeName(1)), '', "helpdesk", "ticket");
         $track::showKanban(0);

@@ -663,7 +663,7 @@ if ($low_stock_count > 0) {
                         <div style="background: #d32f2f; color: white; padding: 6px 12px; border-radius: 15px; font-weight: 600; font-size: 0.9rem;">
                             0 units
                         </div>
-                        <a href="/GLPI-Techwise/front/ticket.form.php?content=Out%20of%20stock%20alert%20for%20' . urlencode($item['name']) . '%20(' . urlencode($item['type']) . ')&subject=Out%20of%20Stock%20-%20' . urlencode($item['name']) . '" target="_blank" style="background: #1976d2; color: white; padding: 6px 16px; border-radius: 15px; font-size: 0.9rem; text-decoration: none; font-weight: 600; transition: background 0.2s;">Submit Ticket</a>
+                        <a href="/GLPI-Techwise/front/ticket.form.php?description=Out%20of%20stock%20alert%20for%20' . urlencode($item['name']) . '%20(' . urlencode($item['type']) . ')&title=Out%20of%20Stock%20-%20' . urlencode($item['name']) . '" target="_blank" style="background: #1976d2; color: white; padding: 6px 16px; border-radius: 15px; font-size: 0.9rem; text-decoration: none; font-weight: 600; transition: background 0.2s;">Submit Ticket</a>
                     </div>
                 </div>';
         }
