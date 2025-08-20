@@ -2453,4 +2453,10 @@ INSERT INTO glpi_links (
   (0, 1, 'GLPI Documentation', 'https://glpi-project.org', '', 1, NOW(), NOW()),
   (0, 1, 'Company Support Portal', 'https://support.company.com', '', 1, NOW(), NOW());
 
+REPLACE INTO glpi_displaypreferences (itemtype, num, `rank`, users_id)
+VALUES
+  ('Monitor', 2004, 10, 0),
+  ('Monitor', 2005, 11, 0),
+  ('Monitor', 2006, 12, 0);
+
 -- End of seed file
