@@ -35,16 +35,11 @@
 {% set params  = params ?? [] %}
 
 {% block more_fields %}
-    {% set flags_html %}
-    {{ include('components/form/flags.html.twig') }}
-    {% endset %}
+    {{ parent() }}
 
-    {% if (flags_html|trim)|length %}
-        {% set flags_html = '<div class="d-flex flex-wrap">' ~ flags_html ~ '</div>' %}
-        {{ fields.htmlField(
-            '',
-            flags_html,
-            _n('Port', 'Ports', get_plural_number()),
-        ) }}
-    {% endif %}
+    {{ fields.textField('resolution', item.fields['resolution'] ?? '', 'Resolution') }}
+    {{ fields.textField('refresh_rate', item.fields['refresh_rate'] ?? '', 'Refresh Rate') }}
+    {{ fields.textField('aspect_ratio', item.fields['aspect_ratio'] ?? '', 'Aspect Ratio') }}
+
 {% endblock %}
+
