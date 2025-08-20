@@ -50,6 +50,18 @@ class Monitor extends CommonDBTM
         'Item_SoftwareVersion',
     ];
 
+    public static $default_search_fields = [
+        '2',      // ID
+        'name',   // Name
+        '31',     // Status
+        '23',     // Manufacturer
+        '40',     // Model
+        'resolution',     // Resolution (your custom field)
+        'refresh_rate',   // Refresh Rate (your custom field)
+        'aspect_ratio',   // Aspect Ratio (your custom field)
+        '19',     // Last update
+    ];
+
     public static $rightname                   = 'monitor';
     protected $usenotepad               = true;
 
@@ -453,6 +465,31 @@ class Monitor extends CommonDBTM
             'massiveaction'      => false,
         ];
 
+        $tab[] = [
+            'id'       => '2004',
+            'table'    => $this->getTable(),
+            'field'    => 'resolution',
+            'name'     => __('Resolution'),
+            'datatype' => 'string',
+        ];
+
+        $tab[] = [
+            'id'       => '2005',
+            'table'    => $this->getTable(),
+            'field'    => 'refresh_rate',
+            'name'     => __('Refresh Rate'),
+            'datatype' => 'string',
+        ];
+
+        $tab[] = [
+            'id'       => '2006',
+            'table'    => $this->getTable(),
+            'field'    => 'aspect_ratio',
+            'name'     => __('Aspect Ratio'),
+            'datatype' => 'string',
+        ];
+
+
         $tab = array_merge($tab, Notepad::rawSearchOptionsToAdd());
 
         $tab = array_merge($tab, Datacenter::rawSearchOptionsToAdd(get_class($this)));
@@ -501,4 +538,6 @@ class Monitor extends CommonDBTM
     {
         return "ti ti-device-desktop";
     }
+
+   
 }

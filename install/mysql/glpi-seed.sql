@@ -274,11 +274,29 @@ INSERT INTO glpi_monitors (
   autoupdatesystems_id,
   uuid,
   date_creation,
-  is_recursive
+  is_recursive,
+  -- 🚀 New columns
+  resolution,
+  refresh_rate,
+  aspect_ratio
 ) VALUES
-(0, 'Monitor-01', NOW(), 'John Doe', '555-4001', 2, 3, 'Main monitor in office', 'MON-SN-0001', 'MON-ALT-01', 24.00, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, NULL, 4, 2, 1, 0.0000, 0, 0, UUID(), NOW(), 0),
-(0, 'Monitor-02', NOW(), 'Jane Smith', '555-4002', 2, 3, 'Spare monitor', 'MON-SN-0002', 'MON-ALT-02', 22.00, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, NULL, 5, 3, 2, 0.0000, 0, 0, UUID(), NOW(), 0),
-(0, 'Monitor-03', NOW(), 'Alice Johnson', '555-4003', 2, 3, 'Meeting room display', 'MON-SN-0003', 'MON-ALT-03', 27.00, 1, 1, 1, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 0, 0, NULL, 6, 4, 3, 0.0000, 0, 0, UUID(), NOW(), 0);
+(0, 'Monitor-01', NOW(), 'John Doe', '555-4001', 2, 3, 'Main monitor in office',
+ 'MON-SN-0001', 'MON-ALT-01', 24.00, 0, 1, 1, 0, 1, 0, 1, 1, 1,
+ 1, 1, 1, 0, 0, 0, NULL, 4, 2, 1, 0.0000, 0, 0, UUID(), NOW(), 0,
+ -- new values
+ '1920x1080', 60, '16:9'),
+
+(0, 'Monitor-02', NOW(), 'Jane Smith', '555-4002', 2, 3, 'Spare monitor',
+ 'MON-SN-0002', 'MON-ALT-02', 22.00, 0, 0, 1, 0, 1, 0, 0, 1, 1,
+ 1, 1, 1, 0, 0, 0, NULL, 5, 3, 2, 0.0000, 0, 0, UUID(), NOW(), 0,
+ -- new values
+ '2560x1440', 75, '16:9'),
+
+(0, 'Monitor-03', NOW(), 'Alice Johnson', '555-4003', 2, 3, 'Meeting room display',
+ 'MON-SN-0003', 'MON-ALT-03', 27.00, 1, 1, 1, 0, 1, 1, 1, 1, 2,
+ 2, 2, 2, 0, 0, 0, NULL, 6, 4, 3, 0.0000, 0, 0, UUID(), NOW(), 0,
+ -- new values
+ '3840x2160', 120, '16:9');
 
 -- === MONITOR TYPES ===
 INSERT INTO glpi_monitortypes (name, comment, date_mod, date_creation)
