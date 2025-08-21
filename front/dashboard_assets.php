@@ -113,6 +113,34 @@ if (isset($_POST['refresh_ai']) && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $
     exit();
 }
 
+// Handle AJAX request for Maintenance AI Recommendations refresh
+if (isset($_POST['refresh_maintenance_ai']) && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+    // Ensure proper session and auth
+    Session::checkCentralAccess();
+    
+    // Simple approach - just return cached or fallback recommendations
+    require_once(GLPI_ROOT . '/config/ai_config.php');
+    $ai_maintenance = new AIQuickStats();
+    
+    // Create minimal maintenance stats for demo
+    $maintenance_stats = [
+        'old_computers' => 2,
+        'no_purchase_date' => 1,
+        'no_manufacturer' => 1,
+        'expired_warranty' => 1,
+        'outdated_os' => 0,
+        'low_stock_consumables' => 1,
+        'low_stock_cartridges' => 1
+    ];
+    $low_stock_count = 2;
+    
+    $ai_recommendations = $ai_maintenance->generateMaintenanceRecommendations($maintenance_stats, $low_stock_count);
+    echo $ai_recommendations;
+    exit();
+}
+
+
+
 $default = Glpi\Dashboard\Grid::getDefaultDashboardForMenu('assets');
 
 // Redirect to "/front/computer.php" if no dashboard found
@@ -791,45 +819,137 @@ document.addEventListener("keydown", function(event) {
 </script>';
 
 // ======================
-// RECOMMENDATIONS
+// AI-POWERED RECOMMENDATIONS
 // ======================
-// RECOMMENDATIONS
-// ======================
-echo '<div style="background: white; padding: 30px; border-radius: 15px;">';
-echo '<h3 style="color: #4caf50;">Recommendations</h3>';
-echo '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">';
+echo '<div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<h3 style="color: #4caf50; margin-bottom: 20px; display: flex; align-items: center; font-size: 1.4rem;">';
+echo '<span style="margin-right: 12px;">🤖</span>AI Maintenance Recommendations';
+echo '</h3>';
 
-if ($maintenance_stats['old_computers'] > 0) {
-    echo '<div style="background: #f1f8e9; padding: 20px; border-radius: 10px;">
-          <h4>🔄 Plan Equipment Refresh</h4>
-          <p>Upgrade legacy systems to avoid performance and security issues.</p>
-          </div>';
+// Load AI configuration and generate recommendations
+require_once(GLPI_ROOT . '/config/ai_config.php');
+$ai_maintenance = new AIQuickStats();
+
+// Clear cache to get fresh recommendations
+$ai_maintenance->clearCache();
+
+// Pre-load asset data for modal display
+$asset_data = [];
+
+// Load old computers data
+$query = "
+    SELECT c.name, c.id, c.date_creation, c.comment, 
+           m.name as manufacturer, mt.name as model
+    FROM glpi_computers c
+    LEFT JOIN glpi_manufacturers m ON c.manufacturers_id = m.id
+    LEFT JOIN glpi_computermodels mt ON c.computermodels_id = mt.id
+    WHERE c.is_deleted = 0 
+    AND c.is_template = 0
+    AND (c.date_creation IS NULL OR c.date_creation < DATE_SUB(NOW(), INTERVAL 5 YEAR))
+    LIMIT 20
+";
+$result = $DB->query($query);
+$asset_data['old_computers'] = [];
+if ($result) {
+    while ($row = $DB->fetchAssoc($result)) {
+        $asset_data['old_computers'][] = $row;
+    }
 }
-if ($maintenance_stats['expired_warranty'] > 0) {
-    echo '<div style="background: #f1f8e9; padding: 20px; border-radius: 10px;">
-          <h4>🛡 Renew Warranties</h4>
-          <p>Consider extending or replacing assets with expired warranties.</p>
-          </div>';
+
+// Load expired warranties data
+$query = "
+    SELECT c.name, c.id, i.warranty_date, c.comment,
+           m.name as manufacturer, mt.name as model
+    FROM glpi_computers c
+    LEFT JOIN glpi_manufacturers m ON c.manufacturers_id = m.id
+    LEFT JOIN glpi_computermodels mt ON c.computermodels_id = mt.id
+    LEFT JOIN glpi_infocoms i ON i.items_id = c.id AND i.itemtype = 'Computer'
+    WHERE c.is_deleted = 0 
+    AND c.is_template = 0
+    AND i.warranty_date IS NOT NULL 
+    AND i.warranty_date < CURDATE()
+    LIMIT 20
+";
+$result = $DB->query($query);
+$asset_data['expired_warranties'] = [];
+if ($result) {
+    while ($row = $DB->fetchAssoc($result)) {
+        $asset_data['expired_warranties'][] = $row;
+    }
 }
-if ($maintenance_stats['outdated_os'] > 0) {
-    echo '<div style="background: #f1f8e9; padding: 20px; border-radius: 10px;">
-          <h4>💻 OS Upgrades</h4>
-          <p>Update outdated Windows versions to maintain security compliance.</p>
-          </div>';
+
+// Load outdated OS data
+$query = "
+    SELECT c.name, c.id, c.comment, os.name as os_name,
+           m.name as manufacturer, mt.name as model
+    FROM glpi_computers c
+    LEFT JOIN glpi_manufacturers m ON c.manufacturers_id = m.id
+    LEFT JOIN glpi_computermodels mt ON c.computermodels_id = mt.id
+    INNER JOIN glpi_items_operatingsystems ios ON ios.items_id = c.id AND ios.itemtype = 'Computer'
+    INNER JOIN glpi_operatingsystems os ON os.id = ios.operatingsystems_id
+    WHERE c.is_deleted = 0 
+    AND c.is_template = 0
+    AND (os.name LIKE '%Windows 7%' OR os.name LIKE '%Windows XP%')
+    LIMIT 20
+";
+$result = $DB->query($query);
+$asset_data['outdated_os'] = [];
+if ($result) {
+    while ($row = $DB->fetchAssoc($result)) {
+        $asset_data['outdated_os'][] = $row;
+    }
 }
-if ($maintenance_stats['no_purchase_date'] > 0 || $maintenance_stats['no_manufacturer'] > 0) {
-    echo '<div style="background: #f1f8e9; padding: 20px; border-radius: 10px;">
-          <h4>📋 Complete Asset Data</h4>
-          <p>Fill missing purchase and manufacturer info for better tracking.</p>
-          </div>';
+
+// Load low stock data
+$query = "
+    (SELECT ci.name, 'Consumable' as type, ci.id, ci.comment,
+        (SELECT COUNT(*) FROM glpi_consumables c WHERE c.consumableitems_id = ci.id AND c.date_out IS NULL) as stock_count
+     FROM glpi_consumableitems ci
+     WHERE ci.is_deleted = 0
+     AND (SELECT COUNT(*) FROM glpi_consumables c WHERE c.consumableitems_id = ci.id AND c.date_out IS NULL) <= 5
+     LIMIT 10)
+    UNION
+    (SELECT ci.name, 'Cartridge' as type, ci.id, ci.comment,
+        (SELECT COUNT(*) FROM glpi_cartridges c WHERE c.cartridgeitems_id = ci.id AND c.date_out IS NULL) as stock_count
+     FROM glpi_cartridgeitems ci
+     WHERE ci.is_deleted = 0
+     AND (SELECT COUNT(*) FROM glpi_cartridges c WHERE c.cartridgeitems_id = ci.id AND c.date_out IS NULL) <= 5
+     LIMIT 10)
+";
+$result = $DB->query($query);
+$asset_data['low_stock'] = [];
+if ($result) {
+    while ($row = $DB->fetchAssoc($result)) {
+        $asset_data['low_stock'][] = $row;
+    }
 }
-if ($low_stock_count > 0) {
-    echo '<div style="background: #f1f8e9; padding: 20px; border-radius: 10px;">
-          <h4>📦 Restock Supplies</h4>
-          <p>Order consumables and cartridges before they run out completely.</p>
-          </div>';
+
+// Load missing data assets
+$query = "
+    SELECT c.name, c.id, c.comment, i.buy_date, i.warranty_date,
+           m.name as manufacturer, mt.name as model
+    FROM glpi_computers c
+    LEFT JOIN glpi_manufacturers m ON c.manufacturers_id = m.id
+    LEFT JOIN glpi_computermodels mt ON c.computermodels_id = mt.id
+    LEFT JOIN glpi_infocoms i ON i.items_id = c.id AND i.itemtype = 'Computer'
+    WHERE c.is_deleted = 0 
+    AND c.is_template = 0
+    AND (i.buy_date IS NULL OR c.manufacturers_id IS NULL OR c.manufacturers_id = 0)
+    LIMIT 20
+";
+$result = $DB->query($query);
+$asset_data['missing_data'] = [];
+if ($result) {
+    while ($row = $DB->fetchAssoc($result)) {
+        $asset_data['missing_data'][] = $row;
+    }
 }
+
+echo '<div id="maintenance-recommendations">';
+$ai_recommendations = $ai_maintenance->generateMaintenanceRecommendations($maintenance_stats, $low_stock_count);
+echo $ai_recommendations;
 echo '</div>';
+
 echo '</div>';
 
 echo '</div>';
@@ -998,4 +1118,152 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>';
 
+// Asset Details Modal and JavaScript
+echo '
+<!-- Asset Details Modal -->
+<div id="assetDetailsModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div style="background-color: white; margin: 5% auto; padding: 0; border-radius: 15px; width: 80%; max-width: 800px; max-height: 80%; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 25px 30px; border-bottom: 1px solid #eee;">
+            <h2 id="modalTitle" style="margin: 0; color: #333; font-size: 1.5rem;">Asset Details</h2>
+            <button onclick="closeAssetDetails()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999; padding: 5px;">&times;</button>
+        </div>
+        <div id="modalContent" style="padding: 30px;">
+            <div style="text-align: center; color: #999;">Loading asset details...</div>
+        </div>
+    </div>
+</div>
+';
+
+// Output JavaScript with embedded PHP data
+?>
+<script>
+const assetData = <?php echo json_encode($asset_data); ?>;
+
+// Function to show asset details
+function showAssetDetails(category) {
+    const modal = document.getElementById("assetDetailsModal");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalContent = document.getElementById("modalContent");
+    
+    // Set modal title based on category
+    const titles = {
+        "old_computers": "🖥️ Old Computers Requiring Replacement",
+        "expired_warranties": "📋 Assets with Expired Warranties", 
+        "outdated_os": "🔒 Systems with Outdated Operating Systems",
+        "low_stock": "📦 Low Stock Items",
+        "missing_data": "📝 Assets with Missing Information"
+    };
+    
+    modalTitle.textContent = titles[category] || "Asset Details";
+    modal.style.display = "block";
+    
+    // Get the data for this category
+    const data = assetData[category] || [];
+    
+    if (data.length === 0) {
+        modalContent.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <div style="color: #28a745; font-size: 18px; margin-bottom: 15px;">✅ All Good!</div>
+                <div style="color: #666;">No assets found in this category. Everything appears to be in order.</div>
+            </div>
+        `;
+        return;
+    }
+    
+    // Build the table HTML
+    let html = '<div style="overflow-x: auto;">';
+    html += '<table style="width: 100%; border-collapse: collapse; margin-top: 15px;">';
+    html += '<thead>';
+    html += '<tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">';
+    html += '<th style="padding: 12px; text-align: left; font-weight: 600; color: #495057;">Name</th>';
+    
+    if (category === "low_stock") {
+        html += '<th style="padding: 12px; text-align: left; font-weight: 600; color: #495057;">Type</th>';
+        html += '<th style="padding: 12px; text-align: center; font-weight: 600; color: #495057;">Stock</th>';
+    } else {
+        html += '<th style="padding: 12px; text-align: left; font-weight: 600; color: #495057;">Manufacturer</th>';
+        html += '<th style="padding: 12px; text-align: left; font-weight: 600; color: #495057;">Model</th>';
+    }
+    
+    if (category === "expired_warranties") {
+        html += '<th style="padding: 12px; text-align: center; font-weight: 600; color: #495057;">Warranty Expired</th>';
+    } else if (category === "outdated_os") {
+        html += '<th style="padding: 12px; text-align: left; font-weight: 600; color: #495057;">Operating System</th>';
+    } else if (category === "old_computers") {
+        html += '<th style="padding: 12px; text-align: center; font-weight: 600; color: #495057;">Age</th>';
+    }
+    
+    html += '<th style="padding: 12px; text-align: left; font-weight: 600; color: #495057;">Notes</th>';
+    html += '</tr>';
+    html += '</thead>';
+    html += '<tbody>';
+    
+    data.forEach(function(row) {
+        html += '<tr style="border-bottom: 1px solid #dee2e6;">';
+        html += '<td style="padding: 12px; font-weight: 500;">' + escapeHtml(row.name || '') + '</td>';
+        
+        if (category === "low_stock") {
+            html += '<td style="padding: 12px;">' + escapeHtml(row.type || '') + '</td>';
+            html += '<td style="padding: 12px; text-align: center;"><span style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.85rem;">' + (row.stock_count || 0) + '</span></td>';
+        } else {
+            html += '<td style="padding: 12px;">' + escapeHtml(row.manufacturer || 'Unknown') + '</td>';
+            html += '<td style="padding: 12px;">' + escapeHtml(row.model || 'Unknown') + '</td>';
+        }
+        
+        if (category === "expired_warranties") {
+            html += '<td style="padding: 12px; text-align: center; color: #dc3545;">' + escapeHtml(row.warranty_date || '') + '</td>';
+        } else if (category === "outdated_os") {
+            html += '<td style="padding: 12px; color: #dc3545;">' + escapeHtml(row.os_name || 'Unknown') + '</td>';
+        } else if (category === "old_computers") {
+            let age = 'Unknown';
+            if (row.date_creation) {
+                const creationDate = new Date(row.date_creation);
+                const now = new Date();
+                age = Math.floor((now - creationDate) / (365 * 24 * 60 * 60 * 1000)) + ' years';
+            }
+            html += '<td style="padding: 12px; text-align: center; color: #dc3545;">' + age + '</td>';
+        }
+        
+        let comment = row.comment || 'No notes';
+        if (comment.length > 50) {
+            comment = comment.substring(0, 50) + '...';
+        }
+        html += '<td style="padding: 12px; color: #666; font-style: italic;">' + escapeHtml(comment) + '</td>';
+        html += '</tr>';
+    });
+    
+    html += '</tbody>';
+    html += '</table>';
+    html += '</div>';
+    
+    html += '<div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #dee2e6; text-align: center; color: #666; font-size: 0.9rem;">';
+    html += 'Showing up to 20 items • Last updated: ' + new Date().toLocaleString();
+    html += '</div>';
+    
+    modalContent.innerHTML = html;
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Function to close modal
+function closeAssetDetails() {
+    document.getElementById("assetDetailsModal").style.display = "none";
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById("assetDetailsModal");
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
+}
+</script>
+<?php
+
 Html::footer();
+

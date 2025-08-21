@@ -54,6 +54,129 @@ class AIQuickStats {
      */
     public function clearCache() {
         unset($_SESSION[$this->session_key]);
+        unset($_SESSION['ai_maintenance_cache']); // Also clear maintenance cache
+    }
+    
+    /**
+     * Generate AI-powered maintenance recommendations
+     */
+    public function generateMaintenanceRecommendations($maintenance_stats, $low_stock_count) {
+        try {
+            $session_key = 'ai_maintenance_cache';
+            
+            // Generate signature for maintenance data
+            $maintenance_signature = md5(serialize($maintenance_stats) . $low_stock_count);
+            
+            // Check cache
+            $cached_data = $_SESSION[$session_key] ?? null;
+            if ($cached_data && $cached_data['signature'] === $maintenance_signature && 
+                time() - $cached_data['timestamp'] < 300) {
+                return $cached_data['recommendations'];
+            }
+            
+            // Create prompt for maintenance recommendations
+            $prompt = $this->createMaintenancePrompt($maintenance_stats, $low_stock_count);
+            
+            // Call AI API
+            $ai_response = $this->callGeminiAPI($prompt);
+            
+            if ($ai_response) {
+                // Cache the result
+                $_SESSION[$session_key] = [
+                    'recommendations' => $ai_response,
+                    'signature' => $maintenance_signature,
+                    'timestamp' => time()
+                ];
+                return $ai_response;
+            }
+            
+            return $this->getFallbackMaintenanceRecommendations($maintenance_stats, $low_stock_count);
+            
+        } catch (Exception $e) {
+            return $this->getFallbackMaintenanceRecommendations($maintenance_stats, $low_stock_count);
+        }
+    }
+    
+    /**
+     * Create maintenance recommendations prompt for AI
+     */
+    private function createMaintenancePrompt($stats, $low_stock_count) {
+        $prompt = "Generate 5 maintenance recommendations for GLPI assets. Return ONLY HTML divs - no markdown.\n\n";
+        $prompt .= "Issues found:\n";
+        $prompt .= "- Old computers: " . $stats['old_computers'] . "\n";
+        $prompt .= "- Expired warranties: " . $stats['expired_warranty'] . "\n";
+        $prompt .= "- Outdated OS: " . $stats['outdated_os'] . "\n";
+        $prompt .= "- Missing data: " . ($stats['no_purchase_date'] + $stats['no_manufacturer']) . "\n";
+        $prompt .= "- Low stock: " . $low_stock_count . "\n\n";
+        
+        $prompt .= "Create 5 clickable recommendations, each under 25 words.\n";
+        $prompt .= "Use priority: 🔴 (critical), 🟡 (medium), 🟢 (low)\n\n";
+        
+        $prompt .= "Format each exactly like this with onclick handler:\n";
+        $prompt .= "<div onclick='showAssetDetails(\"category_type\")' style='background: #f8f9fa; border-left: 4px solid #dc3545; padding: 15px; margin-bottom: 12px; border-radius: 0 8px 8px 0; cursor: pointer; transition: background 0.2s;' onmouseover='this.style.background=\"#e9ecef\"' onmouseout='this.style.background=\"#f8f9fa\"'><div style='font-weight: 600; color: #333; margin-bottom: 5px; display: flex; align-items: center;'><span style='margin-right: 8px;'>🔴</span>Title Here</div><div style='color: #555; font-size: 0.95rem;'>Recommendation text with numbers. <span style='color: #007bff; font-size: 0.85rem;'>Click to view details →</span></div></div>\n\n";
+        
+        $prompt .= "Use these category types for onclick: old_computers, expired_warranties, outdated_os, missing_data, low_stock\n";
+        $prompt .= "START with <div immediately.";
+        
+        return $prompt;
+    }
+    
+    /**
+     * Fallback maintenance recommendations
+     */
+    private function getFallbackMaintenanceRecommendations($stats, $low_stock_count) {
+        $recommendations = '';
+        
+        if ($stats['old_computers'] > 0) {
+            $recommendations .= '<div onclick="showAssetDetails(\'old_computers\')" style="background: #f8f9fa; border-left: 4px solid #dc3545; padding: 15px; margin-bottom: 12px; border-radius: 0 8px 8px 0; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background=\'#e9ecef\'" onmouseout="this.style.background=\'#f8f9fa\'">';
+            $recommendations .= '<div style="font-weight: 600; color: #333; margin-bottom: 5px; display: flex; align-items: center;">';
+            $recommendations .= '<span style="margin-right: 8px;">🔴</span>Legacy Equipment Alert</div>';
+            $recommendations .= '<div style="color: #555; font-size: 0.95rem;">Replace ' . $stats['old_computers'] . ' aging computers to maintain performance and security standards. <span style="color: #007bff; font-size: 0.85rem;">Click to view details →</span></div>';
+            $recommendations .= '</div>';
+        }
+        
+        if ($stats['expired_warranty'] > 0) {
+            $recommendations .= '<div onclick="showAssetDetails(\'expired_warranties\')" style="background: #f8f9fa; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 12px; border-radius: 0 8px 8px 0; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background=\'#e9ecef\'" onmouseout="this.style.background=\'#f8f9fa\'">';
+            $recommendations .= '<div style="font-weight: 600; color: #333; margin-bottom: 5px; display: flex; align-items: center;">';
+            $recommendations .= '<span style="margin-right: 8px;">🟡</span>Warranty Management</div>';
+            $recommendations .= '<div style="color: #555; font-size: 0.95rem;">Review and renew warranties for ' . $stats['expired_warranty'] . ' assets to ensure coverage. <span style="color: #007bff; font-size: 0.85rem;">Click to view details →</span></div>';
+            $recommendations .= '</div>';
+        }
+        
+        if ($stats['outdated_os'] > 0) {
+            $recommendations .= '<div onclick="showAssetDetails(\'outdated_os\')" style="background: #f8f9fa; border-left: 4px solid #dc3545; padding: 15px; margin-bottom: 12px; border-radius: 0 8px 8px 0; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background=\'#e9ecef\'" onmouseout="this.style.background=\'#f8f9fa\'">';
+            $recommendations .= '<div style="font-weight: 600; color: #333; margin-bottom: 5px; display: flex; align-items: center;">';
+            $recommendations .= '<span style="margin-right: 8px;">🔴</span>Security Risk</div>';
+            $recommendations .= '<div style="color: #555; font-size: 0.95rem;">Upgrade ' . $stats['outdated_os'] . ' systems from Windows 7/XP for security compliance. <span style="color: #007bff; font-size: 0.85rem;">Click to view details →</span></div>';
+            $recommendations .= '</div>';
+        }
+        
+        if ($low_stock_count > 0) {
+            $recommendations .= '<div onclick="showAssetDetails(\'low_stock\')" style="background: #f8f9fa; border-left: 4px solid #28a745; padding: 15px; margin-bottom: 12px; border-radius: 0 8px 8px 0; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background=\'#e9ecef\'" onmouseout="this.style.background=\'#f8f9fa\'">';
+            $recommendations .= '<div style="font-weight: 600; color: #333; margin-bottom: 5px; display: flex; align-items: center;">';
+            $recommendations .= '<span style="margin-right: 8px;">🟢</span>Inventory Action</div>';
+            $recommendations .= '<div style="color: #555; font-size: 0.95rem;">Restock ' . $low_stock_count . ' items to prevent operational disruptions. <span style="color: #007bff; font-size: 0.85rem;">Click to view details →</span></div>';
+            $recommendations .= '</div>';
+        }
+        
+        if (($stats['no_purchase_date'] + $stats['no_manufacturer']) > 0) {
+            $total_missing = $stats['no_purchase_date'] + $stats['no_manufacturer'];
+            $recommendations .= '<div onclick="showAssetDetails(\'missing_data\')" style="background: #f8f9fa; border-left: 4px solid #ffc107; padding: 15px; margin-bottom: 12px; border-radius: 0 8px 8px 0; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background=\'#e9ecef\'" onmouseout="this.style.background=\'#f8f9fa\'">';
+            $recommendations .= '<div style="font-weight: 600; color: #333; margin-bottom: 5px; display: flex; align-items: center;">';
+            $recommendations .= '<span style="margin-right: 8px;">🟡</span>Data Completion</div>';
+            $recommendations .= '<div style="color: #555; font-size: 0.95rem;">Complete missing information for ' . $total_missing . ' assets to improve tracking accuracy. <span style="color: #007bff; font-size: 0.85rem;">Click to view details →</span></div>';
+            $recommendations .= '</div>';
+        }
+        
+        if (empty($recommendations)) {
+            $recommendations = '<div style="background: #d4edda; border-left: 4px solid #28a745; padding: 20px; margin-bottom: 12px; border-radius: 0 8px 8px 0; text-align: center;">';
+            $recommendations .= '<div style="font-weight: 600; color: #155724; margin-bottom: 5px; display: flex; align-items: center; justify-content: center;">';
+            $recommendations .= '<span style="margin-right: 8px;">✅</span>All Systems Optimal</div>';
+            $recommendations .= '<div style="color: #155724; font-size: 0.95rem;">No critical maintenance issues detected. Continue regular monitoring.</div>';
+            $recommendations .= '</div>';
+        }
+        
+        return $recommendations;
     }
     
     /**
@@ -161,7 +284,7 @@ class AIQuickStats {
                 'temperature' => 0.7,
                 'topK' => 40,
                 'topP' => 0.95,
-                'maxOutputTokens' => 800
+                'maxOutputTokens' => 1500
             ]
         ];
         
