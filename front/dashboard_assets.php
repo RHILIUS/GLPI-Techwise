@@ -61,6 +61,58 @@ global $CFG_GLPI;
 include('../inc/includes.php');
 
 Session::checkCentralAccess();
+
+// Handle AJAX request for AI Quick Stats refresh
+if (isset($_POST['refresh_ai']) && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+    // Load AI configuration
+    require_once(GLPI_ROOT . '/config/ai_config.php');
+    
+    // Get updated asset data
+    global $DB;
+    $asset_types = [
+        'Computer' => ['label' => 'Computers', 'color' => '#2196F3'],
+        'Monitor' => ['label' => 'Monitors', 'color' => '#4CAF50'],
+        'NetworkEquipment' => ['label' => 'Network Equipment', 'color' => '#FF9800'],
+        'Printer' => ['label' => 'Printers', 'color' => '#9C27B0'],
+        'Phone' => ['label' => 'Phones', 'color' => '#F44336'],
+        'Software' => ['label' => 'Software', 'color' => '#009688'],
+        'CartridgeItem' => ['label' => 'Cartridges', 'color' => '#795548'],
+        'ConsumableItem' => ['label' => 'Consumables', 'color' => '#607D8B']
+    ];
+    
+    $asset_counts = [];
+    $total_assets = 0;
+    
+    foreach ($asset_types as $class => $info) {
+        $table = 'glpi_' . strtolower($class) . 's';
+        if ($class === 'NetworkEquipment') $table = 'glpi_networkequipments';
+        if ($class === 'CartridgeItem') $table = 'glpi_cartridgeitems';
+        if ($class === 'ConsumableItem') $table = 'glpi_consumableitems';
+        
+        $query = "SELECT COUNT(*) as count FROM `$table` WHERE `is_deleted` = 0";
+        $result = $DB->query($query);
+        $count = ($result && $row = $DB->fetchAssoc($result)) ? (int)$row['count'] : 0;
+        
+        $asset_counts[$class] = $count;
+        $total_assets += $count;
+    }
+    
+    // Generate AI insights
+    $ai_stats = new AIQuickStats();
+    
+    // Clear cache to ensure fresh generation with updated cleaning
+    $ai_stats->clearCache();
+    
+    if ($ai_stats->isAIReady()) {
+        $ai_insights = $ai_stats->generateAIInsights($asset_counts, $total_assets, $asset_types);
+        echo $ai_insights;
+    } else {
+        $ai_insights = $ai_stats->getFallbackInsights(['total_assets' => $total_assets, 'asset_distribution' => []]);
+        echo $ai_insights;
+    }
+    exit();
+}
+
 $default = Glpi\Dashboard\Grid::getDefaultDashboardForMenu('assets');
 
 // Redirect to "/front/computer.php" if no dashboard found
@@ -270,29 +322,32 @@ foreach ($asset_types as $class => $info) {
 echo '</tbody></table>';
 echo '</div>';
 
-// Quick Stats
-echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
-echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem;"> Quick Stats</h3>';
-echo '<div style="margin-bottom: 15px; padding: 15px; background: #e3f2fd; border-radius: 8px;">';
-echo '<div style="font-size: 1.1rem; color: #1976d2; margin-bottom: 5px;">Most Common Asset</div>';
-$max_class = array_keys($asset_counts, max($asset_counts))[0];
-$max_label = $asset_types[$max_class]['label'] ?? 'N/A';
-echo '<div style="font-weight: bold; color: #333;">' . $max_label . ' (' . max($asset_counts) . ' items)</div>';
-echo '</div>';
+// Quick Stats - AI Dynamic Insights Only
+echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" id="quickstats-container">';
+echo '<h3 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 1.3rem; font-weight: 600; display: flex; align-items: center;">';
+echo '<span style="margin-right: 10px; font-size: 1.4rem;">🤖</span> Quick Stats';
+echo '<span id="ai-loading" style="margin-left: 10px; font-size: 0.8rem; color: #666; display: none; font-weight: 400;">Analyzing...</span>';
+echo '</h3>';
 
-echo '<div style="margin-bottom: 15px; padding: 15px; background: #f3e5f5; border-radius: 8px;">';
-echo '<div style="font-size: 1.1rem; color: #7b1fa2; margin-bottom: 5px;">Categories with Assets</div>';
-echo '<div style="font-weight: bold; color: #333;">' . count(array_filter($asset_counts)) . ' out of ' . count($asset_types) . '</div>';
-echo '</div>';
+// Load AI configuration
+require_once(GLPI_ROOT . '/config/ai_config.php');
+$ai_stats = new AIQuickStats();
 
-if ($total_assets > 0) {
-    $avg_per_category = round($total_assets / count(array_filter($asset_counts)), 1);
-    echo '<div style="padding: 15px; background: #e8f5e8; border-radius: 8px;">';
-    echo '<div style="font-size: 1.1rem; color: #388e3c; margin-bottom: 5px;">Average per Category</div>';
-    echo '<div style="font-weight: bold; color: #333;">' . $avg_per_category . ' assets</div>';
-    echo '</div>';
-}
+// Generate current data signature for auto-refresh detection
+$current_signature = $ai_stats->generateDataSignature($asset_counts, $total_assets);
+
+echo '<div id="quickstats-content" data-signature="' . $current_signature . '">';
+echo '<div id="ai-insights">';
+
+// Clear cache to ensure fresh generation with updated cleaning
+$ai_stats->clearCache();
+
+$ai_insights = $ai_stats->generateAIInsights($asset_counts, $total_assets, $asset_types);
+echo $ai_insights;
 echo '</div>';
+echo '</div>'; // Close quickstats-content
+
+echo '</div>'; // Close quickstats-container
 echo '</div>';
 
 echo '</div>';
@@ -848,6 +903,98 @@ echo '],
             }
         });
     }
+});
+</script>';
+
+// Auto-refresh functionality for AI Quick Stats
+echo '<script>
+document.addEventListener("DOMContentLoaded", function() {
+    let lastSignature = null;
+    
+    // Get initial signature
+    const quickstatsContent = document.getElementById("quickstats-content");
+    if (quickstatsContent) {
+        lastSignature = quickstatsContent.getAttribute("data-signature");
+    }
+    
+    // Function to check for data changes and refresh AI insights
+    function checkForUpdates() {
+        // Only check if we are on the Analytics tab
+        const analyticsTab = document.getElementById("analytics-tab");
+        if (!analyticsTab || !analyticsTab.classList.contains("active")) {
+            return;
+        }
+        
+        const currentSignature = quickstatsContent ? quickstatsContent.getAttribute("data-signature") : null;
+        
+        // If signature changed, refresh the insights
+        if (currentSignature && currentSignature !== lastSignature) {
+            refreshQuickStats();
+            lastSignature = currentSignature;
+        }
+    }
+    
+    // Function to refresh AI insights only
+    function refreshQuickStats() {
+        const aiInsights = document.getElementById("ai-insights");
+        const aiLoading = document.getElementById("ai-loading");
+        
+        if (!aiInsights || !aiLoading) return;
+        
+        // Show loading indicator
+        aiLoading.style.display = "inline";
+        
+        // Create a hidden form to get updated AI insights
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.style.display = "none";
+        
+        const actionInput = document.createElement("input");
+        actionInput.type = "hidden";
+        actionInput.name = "refresh_ai";
+        actionInput.value = "1";
+        form.appendChild(actionInput);
+        
+        document.body.appendChild(form);
+        
+        // Use fetch to get updated insights without full page reload
+        const formData = new FormData(form);
+        
+        fetch(window.location.href, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(response => response.text())
+        .then(data => {
+            // Update AI insights with new content
+            aiInsights.innerHTML = data;
+            aiLoading.style.display = "none";
+            document.body.removeChild(form);
+        })
+        .catch(error => {
+            console.log("AI refresh completed");
+            aiLoading.style.display = "none";
+            if (document.body.contains(form)) {
+                document.body.removeChild(form);
+            }
+        });
+    }
+    
+    // Monitor for data changes every 10 seconds
+    setInterval(checkForUpdates, 10000);
+    
+    // Also check when tab becomes active
+    document.addEventListener("click", function(e) {
+        if (e.target && e.target.textContent && e.target.textContent.includes("Analytics")) {
+            setTimeout(checkForUpdates, 500);
+        }
+    });
+    
+    // Initial check after 2 seconds
+    setTimeout(checkForUpdates, 2000);
 });
 </script>';
 
