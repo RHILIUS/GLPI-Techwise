@@ -727,20 +727,20 @@ echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; b
 echo '<h3 style="color: #ff6b6b;">Critical Issues</h3>';
 
 if ($maintenance_stats['old_computers'] > 0) {
-    echo '<div style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4>Legacy Equipment</h4>
+    echo '<div onclick="showAssetDetails(\'old_computers\')" style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background=\'#ffcdd2\'; this.style.transform=\'translateX(5px)\'" onmouseout="this.style.background=\'#ffebee\'; this.style.transform=\'translateX(0)\'">
+          <h4>Legacy Equipment <span style="font-size: 0.8em; color: #666; float: right;">Click for details →</span></h4>
           <p><strong>' . $maintenance_stats['old_computers'] . '</strong> computers are over 5 years old</p>
           </div>';
 }
 if ($maintenance_stats['expired_warranty'] > 0) {
-    echo '<div style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4>Expired Warranty</h4>
+    echo '<div onclick="showAssetDetails(\'expired_warranties\')" style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background=\'#ffcdd2\'; this.style.transform=\'translateX(5px)\'" onmouseout="this.style.background=\'#ffebee\'; this.style.transform=\'translateX(0)\'">
+          <h4>Expired Warranty <span style="font-size: 0.8em; color: #666; float: right;">Click for details →</span></h4>
           <p><strong>' . $maintenance_stats['expired_warranty'] . '</strong> computers have expired warranties</p>
           </div>';
 }
 if ($maintenance_stats['outdated_os'] > 0) {
-    echo '<div style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4>Outdated OS</h4>
+    echo '<div onclick="showAssetDetails(\'outdated_os\')" style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background=\'#ffcdd2\'; this.style.transform=\'translateX(5px)\'" onmouseout="this.style.background=\'#ffebee\'; this.style.transform=\'translateX(0)\'">
+          <h4>Outdated OS <span style="font-size: 0.8em; color: #666; float: right;">Click for details →</span></h4>
           <p><strong>' . $maintenance_stats['outdated_os'] . '</strong> computers running Windows 7/XP</p>
           </div>';
 }
@@ -754,14 +754,14 @@ echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; b
 echo '<h3 style="color: #ffa726;">Warning Issues</h3>';
 
 if ($maintenance_stats['no_purchase_date'] > 0) {
-    echo '<div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4>Missing Purchase Date</h4>
+    echo '<div onclick="showAssetDetails(\'missing_data\')" style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background=\'#ffe0b2\'; this.style.transform=\'translateX(5px)\'" onmouseout="this.style.background=\'#fff3e0\'; this.style.transform=\'translateX(0)\'">
+          <h4>Missing Purchase Date <span style="font-size: 0.8em; color: #666; float: right;">Click for details →</span></h4>
           <p><strong>' . $maintenance_stats['no_purchase_date'] . '</strong> computers missing purchase date</p>
           </div>';
 }
 if ($maintenance_stats['no_manufacturer'] > 0) {
-    echo '<div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4>Missing Manufacturer</h4>
+    echo '<div onclick="showAssetDetails(\'missing_data\')" style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background=\'#ffe0b2\'; this.style.transform=\'translateX(5px)\'" onmouseout="this.style.background=\'#fff3e0\'; this.style.transform=\'translateX(0)\'">
+          <h4>Missing Manufacturer <span style="font-size: 0.8em; color: #666; float: right;">Click for details →</span></h4>
           <p><strong>' . $maintenance_stats['no_manufacturer'] . '</strong> computers missing manufacturer info</p>
           </div>';
 }
