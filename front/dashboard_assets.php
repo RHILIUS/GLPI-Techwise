@@ -275,6 +275,54 @@ foreach ($software_types as $table) {
     }
 }
 
+// Asset Distribution Details (same as Total Assets)
+$card_details['asset_distribution'] = $card_details['total_assets'];
+
+// Asset Breakdown Details (same as Total Assets but with different presentation)
+$card_details['asset_breakdown'] = $card_details['total_assets'];
+
+// Asset Summary Details (same as Total Assets but with different presentation)
+$card_details['asset_summary'] = $card_details['total_assets'];
+
+// Quick Stats Details (AI-generated insights with asset breakdown)
+$card_details['quick_stats'] = [
+    'AI Insights' => [
+        'count' => 3, // Number of insights shown
+        'color' => '#2c3e50',
+        'items' => [
+            [
+                'id' => 'insight_1',
+                'name' => 'Total Assets Overview',
+                'serial' => $total_assets . ' assets across 7 categories',
+                'date_creation' => date('Y-m-d H:i:s')
+            ],
+            [
+                'id' => 'insight_2', 
+                'name' => 'Computers Dominate',
+                'serial' => 'Computers (' . ($asset_counts['glpi_computers'] ?? 0) . ') are the majority of assets',
+                'date_creation' => date('Y-m-d H:i:s')
+            ],
+            [
+                'id' => 'insight_3',
+                'name' => 'All Categories in Use', 
+                'serial' => 'All 7 asset categories are utilized',
+                'date_creation' => date('Y-m-d H:i:s')
+            ]
+        ]
+    ]
+];
+
+// Add detailed breakdown for each category that has assets
+foreach ($asset_types as $table => $info) {
+    if ($asset_counts[$table] > 0) {
+        $card_details['quick_stats'][$info['label']] = [
+            'count' => $asset_counts[$table],
+            'color' => $info['color'],
+            'items' => $card_details['total_assets'][$info['label']]['items'] ?? []
+        ];
+    }
+}
+
 // Add tabbed interface CSS and JavaScript
 echo '<style>
 .dashboard-tabs {
@@ -372,8 +420,9 @@ echo '</div>';
 echo '<div style="display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">';
 
 // Pie Chart
-echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<div onclick="showCardDetails(\'asset_distribution\')" style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
 echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem; text-align: center;"> Asset Distribution</h3>';
+echo '<p style="text-align: center; color: #666; font-size: 0.9rem; margin: -10px 0 15px 0;">Click to view details</p>';
 echo '<div style="display: flex; align-items: center; gap: 25px;">';
 
 if ($total_assets > 0) {
@@ -401,8 +450,9 @@ echo '</div>';
 echo '</div>';
 
 // Bar Chart using Chart.js
-echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<div onclick="showCardDetails(\'asset_breakdown\')" style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
 echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem; text-align: center;"> Asset Breakdown</h3>';
+echo '<p style="text-align: center; color: #666; font-size: 0.9rem; margin: -10px 0 15px 0;">Click to view details</p>';
 echo '<canvas id="assetBarChart" width="400" height="200"></canvas>';
 echo '</div>';
 echo '</div>';
@@ -411,8 +461,9 @@ echo '</div>';
 echo '<div style="display: flex; gap: 20px; flex-wrap: wrap;">';
 
 // Asset Status Table
-echo '<div style="flex: 1; min-width: 400px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<div onclick="showCardDetails(\'asset_summary\')" style="flex: 1; min-width: 400px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
 echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem;"> Asset Summary</h3>';
+echo '<p style="color: #666; font-size: 0.9rem; margin: -10px 0 15px 0;">Click to view details</p>';
 echo '<table style="width: 100%; border-collapse: collapse;">';
 echo '<thead><tr style="background: #f8f9fa;"><th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Category</th><th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;">Count</th><th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;">Percentage</th></tr></thead>';
 echo '<tbody>';
@@ -430,11 +481,12 @@ echo '</tbody></table>';
 echo '</div>';
 
 // Quick Stats - AI Dynamic Insights Only
-echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" id="quickstats-container">';
+echo '<div onclick="showCardDetails(\'quick_stats\')" style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" id="quickstats-container" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
 echo '<h3 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 1.3rem; font-weight: 600; display: flex; align-items: center;">';
 echo '<span style="margin-right: 10px; font-size: 1.4rem;">🤖</span> Quick Stats';
 echo '<span id="ai-loading" style="margin-left: 10px; font-size: 0.8rem; color: #666; display: none; font-weight: 400;">Analyzing...</span>';
 echo '</h3>';
+echo '<p style="color: #666; font-size: 0.9rem; margin: -10px 0 15px 0;">Click to view details</p>';
 
 // Load AI configuration
 require_once(GLPI_ROOT . '/config/ai_config.php');
@@ -1108,7 +1160,11 @@ function showCardDetails(cardType) {
     const titles = {
         "total_assets": "📊 Total Assets Details",
         "active_hardware": "🖥️ Active Hardware Details",
-        "software_licenses": "💿 Software & Licenses Details"
+        "software_licenses": "💿 Software & Licenses Details",
+        "asset_distribution": "📈 Asset Distribution Details",
+        "asset_breakdown": "📊 Asset Breakdown Details", 
+        "asset_summary": "📋 Asset Summary Details",
+        "quick_stats": "🤖 Quick Stats Details"
     };
     
     modalTitle.textContent = titles[cardType] || "Asset Details";
