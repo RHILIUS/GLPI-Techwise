@@ -2459,4 +2459,29 @@ VALUES
   ('Monitor', 2005, 11, 0),
   ('Monitor', 2006, 12, 0);
 
+-- === Notification Mailing Settings Seeder ===
+REPLACE INTO glpi_configs (context, name, value) VALUES
+('core', 'admin_email', 'company.tech.wise1@gmail.com'),
+('core', 'admin_email_name', 'GLPI'),
+('core', 'from_email', 'company.tech.wise1@gmail.com'),
+('core', 'from_email_name', 'GLPI'),
+('core', 'replyto_email', 'company.tech.wise1@gmail.com'),
+('core', 'replyto_email_name', 'GLPI'),
+('core', 'noreply_email', ''),
+('core', 'noreply_email_name', ''),
+('core', 'attach_ticket_documents_to_mail', '0'),
+('core', 'mailing_signature', 'Sent by GLPI'),
+('core', 'smtp_mode', '3'),
+('core', 'smtp_max_retries', '5'),
+('core', 'smtp_retry_time', '5'),
+('core', 'smtp_oauth_provider', '0'),
+('core', 'smtp_oauth_client_id', ''),
+('core', 'smtp_oauth_client_secret', ''),
+('core', 'smtp_check_certificate', '1'),
+('core', 'smtp_host', 'smtp.gmail.com'),
+('core', 'smtp_port', '587'),
+('core', 'smtp_username', 'company.tech.wise1@gmail.com'),
+('core', 'smtp_passwd', 'SE+gAcR2wO9/OnDkya/9sGlpZgV90KU4IxdzPP/KV1k='),
+('core', 'smtp_sender', 'company.tech.wise1@gmail.com');
+
 -- End of seed file
