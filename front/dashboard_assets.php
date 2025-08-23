@@ -199,6 +199,82 @@ foreach ($asset_types as $table => $info) {
 }
 $gradient = empty($segments) ? '#ddd 0deg 360deg' : implode(', ', $segments);
 
+// Collect detailed data for card modals
+$card_details = [];
+
+// Total Assets Details
+$card_details['total_assets'] = [];
+foreach ($asset_types as $table => $info) {
+    if ($asset_counts[$table] > 0) {
+        // Handle different column names for different tables
+        if ($table == 'glpi_softwares') {
+            $query = "SELECT id, name, comment as serial, date_creation FROM `$table` WHERE is_deleted = 0 ORDER BY name LIMIT 50";
+        } elseif ($table == 'glpi_softwarelicenses') {
+            $query = "SELECT id, name, number as serial, date_creation FROM `$table` WHERE is_deleted = 0 ORDER BY name LIMIT 50";
+        } else {
+            $query = "SELECT id, name, serial, date_creation FROM `$table` WHERE is_deleted = 0 ORDER BY name LIMIT 50";
+        }
+        $result = $DB->query($query);
+        $items = [];
+        if ($result) {
+            while ($row = $DB->fetchAssoc($result)) {
+                $items[] = $row;
+            }
+        }
+        $card_details['total_assets'][$info['label']] = [
+            'count' => $asset_counts[$table],
+            'color' => $info['color'],
+            'items' => $items
+        ];
+    }
+}
+
+// Active Hardware Details (Computers, Monitors, Printers)
+$card_details['active_hardware'] = [];
+$hardware_types = ['glpi_computers', 'glpi_monitors', 'glpi_printers'];
+foreach ($hardware_types as $table) {
+    if (isset($asset_counts[$table]) && $asset_counts[$table] > 0) {
+        $query = "SELECT id, name, serial, date_creation FROM `$table` WHERE is_deleted = 0 ORDER BY name LIMIT 50";
+        $result = $DB->query($query);
+        $items = [];
+        if ($result) {
+            while ($row = $DB->fetchAssoc($result)) {
+                $items[] = $row;
+            }
+        }
+        $card_details['active_hardware'][$asset_types[$table]['label']] = [
+            'count' => $asset_counts[$table],
+            'color' => $asset_types[$table]['color'],
+            'items' => $items
+        ];
+    }
+}
+
+// Software & Licenses Details
+$card_details['software_licenses'] = [];
+$software_types = ['glpi_softwares', 'glpi_softwarelicenses'];
+foreach ($software_types as $table) {
+    if (isset($asset_counts[$table]) && $asset_counts[$table] > 0) {
+        if ($table == 'glpi_softwares') {
+            $query = "SELECT id, name, comment as serial, date_creation FROM `$table` WHERE is_deleted = 0 ORDER BY name LIMIT 50";
+        } else {
+            $query = "SELECT id, name, number as serial, date_creation FROM `$table` WHERE is_deleted = 0 ORDER BY name LIMIT 50";
+        }
+        $result = $DB->query($query);
+        $items = [];
+        if ($result) {
+            while ($row = $DB->fetchAssoc($result)) {
+                $items[] = $row;
+            }
+        }
+        $card_details['software_licenses'][$asset_types[$table]['label']] = [
+            'count' => $asset_counts[$table],
+            'color' => $asset_types[$table]['color'],
+            'items' => $items
+        ];
+    }
+}
+
 // Add tabbed interface CSS and JavaScript
 echo '<style>
 .dashboard-tabs {
@@ -270,22 +346,25 @@ echo '<div style="max-width: 1200px; margin: 40px auto; padding: 20px;">';
 
 // Row 1: Summary Cards
 echo '<div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">';
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">';
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onclick="showCardDetails(\'total_assets\')" onmouseover="this.style.transform=\'translateY(-5px)\'; this.style.boxShadow=\'0 8px 25px rgba(102, 126, 234, 0.4)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Total Assets</h3>';
 
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $total_assets . '</div>';
+echo '<div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 $active_assets = array_sum(array_slice($asset_counts, 0, 3)); // Computers + Monitors + Printers
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">';
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onclick="showCardDetails(\'active_hardware\')" onmouseover="this.style.transform=\'translateY(-5px)\'; this.style.boxShadow=\'0 8px 25px rgba(240, 147, 251, 0.4)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Active Hardware</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $active_assets . '</div>';
+echo '<div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 $software_count = ($asset_counts['glpi_softwares'] ?? 0) + ($asset_counts['glpi_softwarelicenses'] ?? 0);
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">';
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onclick="showCardDetails(\'software_licenses\')" onmouseover="this.style.transform=\'translateY(-5px)\'; this.style.boxShadow=\'0 8px 25px rgba(79, 172, 254, 0.4)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Software & Licenses</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $software_count . '</div>';
+echo '<div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 echo '</div>';
 
@@ -382,6 +461,28 @@ echo '</div>';
 
 // Close enhanced tab
 echo '</div>';
+
+// Card Details Modal
+echo '
+<div id="cardDetailsModal" style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(5px);">
+    <div style="background-color: #fefefe; margin: 3% auto; padding: 0; border-radius: 15px; width: 90%; max-width: 1200px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); animation: slideIn 0.3s ease;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px 15px 0 0; position: relative;">
+            <h2 id="cardModalTitle" style="margin: 0; font-size: 1.5rem; display: flex; align-items: center;">Asset Details</h2>
+            <span onclick="closeCardDetails()" style="position: absolute; right: 20px; top: 20px; font-size: 28px; font-weight: bold; cursor: pointer; color: white; opacity: 0.8; transition: opacity 0.3s;" onmouseover="this.style.opacity=\'1\'" onmouseout="this.style.opacity=\'0.8\'">×</span>
+        </div>
+        <div id="cardModalContent" style="padding: 30px; max-height: 70vh; overflow-y: auto;">
+            Loading...
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+';
 
 // Tab 3: Maintenance View
 echo '<div id="maintenance-tab" class="tab-content">';
@@ -971,6 +1072,115 @@ function switchTab(tabName, buttonElement) {
     
     // Add active class to clicked button
     buttonElement.classList.add("active");
+}
+
+// Card Details Data
+const cardDetails = ' . json_encode($card_details) . ';
+
+// Function to show card details
+function showCardDetails(cardType) {
+    const modal = document.getElementById("cardDetailsModal");
+    const modalTitle = document.getElementById("cardModalTitle");
+    const modalContent = document.getElementById("cardModalContent");
+    
+    // Set modal title based on card type
+    const titles = {
+        "total_assets": "📊 Total Assets Details",
+        "active_hardware": "🖥️ Active Hardware Details",
+        "software_licenses": "💿 Software & Licenses Details"
+    };
+    
+    modalTitle.textContent = titles[cardType] || "Asset Details";
+    modal.style.display = "block";
+    
+    // Get the data for this card
+    const data = cardDetails[cardType] || {};
+    
+    if (Object.keys(data).length === 0) {
+        modalContent.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <div style="color: #666; font-size: 18px;">No data available for this category.</div>
+            </div>
+        `;
+        return;
+    }
+    
+    // Build the content
+    let html = `<div style="display: flex; flex-wrap: wrap; gap: 20px;">`;
+    
+    Object.keys(data).forEach(function(category) {
+        const categoryData = data[category];
+        const items = categoryData.items || [];
+        const count = categoryData.count || 0;
+        const color = categoryData.color || "#666";
+        
+        html += `
+            <div style="flex: 1; min-width: 300px; background: #f8f9fa; border-radius: 12px; overflow: hidden; border: 1px solid #e9ecef;">
+                <div style="background: ${color}; color: white; padding: 20px; text-align: center;">
+                    <h3 style="margin: 0; font-size: 1.2rem;">${escapeHtml(category)}</h3>
+                    <div style="font-size: 2rem; font-weight: bold; margin-top: 8px;">${count}</div>
+                </div>
+                <div style="padding: 20px; max-height: 400px; overflow-y: auto;">
+        `;
+        
+        if (items.length > 0) {
+            html += `<div style="space-y: 8px;">`;
+            items.forEach(function(item, index) {
+                if (index < 20) { // Limit to first 20 items
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 8px; border: 1px solid #e9ecef; margin-bottom: 8px;">
+                            <div>
+                                <div style="font-weight: 600; color: #333;">${escapeHtml(item.name || "Unnamed")}</div>
+                                <div style="color: #666; font-size: 0.85rem;">${escapeHtml(item.serial || "No serial")}</div>
+                            </div>
+                            <div style="text-align: right; color: #888; font-size: 0.8rem;">
+                                ID: ${item.id}<br>
+                                ${item.date_creation ? new Date(item.date_creation).toLocaleDateString() : "N/A"}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            if (items.length > 20) {
+                html += `<div style="text-align: center; color: #666; font-style: italic; margin-top: 15px;">... and ${items.length - 20} more items</div>`;
+            }
+            
+            html += `</div>`;
+        } else {
+            html += `<div style="text-align: center; color: #666; padding: 20px;">No items found</div>`;
+        }
+        
+        html += `</div></div>`;
+    });
+    
+    html += `</div>`;
+    
+    html += `<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; text-align: center; color: #666; font-size: 0.9rem;">`;
+    html += `Showing up to 20 items per category • Last updated: ` + new Date().toLocaleString();
+    html += `</div>`;
+    
+    modalContent.innerHTML = html;
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Function to close modal
+function closeCardDetails() {
+    document.getElementById("cardDetailsModal").style.display = "none";
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById("cardDetailsModal");
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
 }
 </script>';
 
