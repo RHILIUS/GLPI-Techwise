@@ -275,15 +275,6 @@ foreach ($software_types as $table) {
     }
 }
 
-// Asset Distribution Details (same as Total Assets but with different presentation)
-$card_details['asset_distribution'] = $card_details['total_assets'];
-
-// Asset Breakdown Details (same as Total Assets but with different presentation)
-$card_details['asset_breakdown'] = $card_details['total_assets'];
-
-// Asset Summary Details (same as Total Assets but with different presentation)
-$card_details['asset_summary'] = $card_details['total_assets'];
-
 // Add tabbed interface CSS and JavaScript
 echo '<style>
 .dashboard-tabs {
@@ -381,7 +372,7 @@ echo '</div>';
 echo '<div style="display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">';
 
 // Pie Chart
-echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" onclick="showCardDetails(\'asset_distribution\')" onmouseover="this.style.transform=\'translateY(-5px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
+echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
 echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem; text-align: center;"> Asset Distribution</h3>';
 echo '<div style="display: flex; align-items: center; gap: 25px;">';
 
@@ -407,14 +398,12 @@ foreach ($asset_types as $class => $info) {
 }
 echo '</div>';
 echo '</div>';
-echo '<div style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 // Bar Chart using Chart.js
-echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" onclick="showCardDetails(\'asset_breakdown\')" onmouseover="this.style.transform=\'translateY(-5px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
+echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
 echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem; text-align: center;"> Asset Breakdown</h3>';
 echo '<canvas id="assetBarChart" width="400" height="200"></canvas>';
-echo '<div style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 echo '</div>';
 
@@ -422,7 +411,7 @@ echo '</div>';
 echo '<div style="display: flex; gap: 20px; flex-wrap: wrap;">';
 
 // Asset Status Table
-echo '<div style="flex: 1; min-width: 400px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" onclick="showCardDetails(\'asset_summary\')" onmouseover="this.style.transform=\'translateY(-5px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
+echo '<div style="flex: 1; min-width: 400px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
 echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem;"> Asset Summary</h3>';
 echo '<table style="width: 100%; border-collapse: collapse;">';
 echo '<thead><tr style="background: #f8f9fa;"><th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Category</th><th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;">Count</th><th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;">Percentage</th></tr></thead>';
@@ -438,7 +427,6 @@ foreach ($asset_types as $class => $info) {
     echo '</tr>';
 }
 echo '</tbody></table>';
-echo '<div style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 // Quick Stats - AI Dynamic Insights Only
@@ -650,31 +638,35 @@ echo '</div>';
 echo '<div style="display: flex; gap: 20px; margin-bottom: 40px; flex-wrap: wrap;">';
 
 // Critical Issues Card
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
+echo '<div onclick="showAssetDetails(\'critical_issues\')" style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(255,107,107,0.3)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3>Critical Issues</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $critical_count . '</div>';
 echo '<div>Assets need immediate attention</div>';
+echo '<div style="position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 // Warning Issues Card
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
+echo '<div onclick="showAssetDetails(\'warning_issues\')" style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(255,167,38,0.3)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3>Warning Issues</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $warning_count . '</div>';
 echo '<div>Assets need review</div>';
+echo '<div style="position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 // Low Stock Card
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ab47bc 0%, #8e24aa 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
+echo '<div onclick="showAssetDetails(\'low_stock\')" style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ab47bc 0%, #8e24aa 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(171,71,188,0.3)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3>Low Stock</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $low_stock_count . '</div>';
 echo '<div>Items need restocking</div>';
+echo '<div style="position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 // Total Issues Card
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
+echo '<div onclick="showAssetDetails(\'total_issues\')" style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(66,165,245,0.3)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3>Total Issues</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $total_maintenance_items . '</div>';
 echo '<div>Items requiring attention</div>';
+echo '<div style="position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 echo '</div>';
@@ -1058,6 +1050,23 @@ if ($result) {
     }
 }
 
+// Create combined data arrays for maintenance cards
+$asset_data['critical_issues'] = array_merge(
+    $asset_data['old_computers'] ?? [],
+    $asset_data['expired_warranties'] ?? [],
+    $asset_data['outdated_os'] ?? []
+);
+
+$asset_data['warning_issues'] = array_merge(
+    $asset_data['missing_data'] ?? []
+);
+
+$asset_data['total_issues'] = array_merge(
+    $asset_data['critical_issues'],
+    $asset_data['warning_issues'],
+    $asset_data['low_stock'] ?? []
+);
+
 echo '<div id="maintenance-recommendations">';
 $ai_recommendations = $ai_maintenance->generateMaintenanceRecommendations($maintenance_stats, $low_stock_count);
 echo $ai_recommendations;
@@ -1099,10 +1108,7 @@ function showCardDetails(cardType) {
     const titles = {
         "total_assets": "📊 Total Assets Details",
         "active_hardware": "🖥️ Active Hardware Details",
-        "software_licenses": "💿 Software & Licenses Details",
-        "asset_distribution": "📈 Asset Distribution Details",
-        "asset_breakdown": "📊 Asset Breakdown Details",
-        "asset_summary": "📋 Asset Summary Details"
+        "software_licenses": "💿 Software & Licenses Details"
     };
     
     modalTitle.textContent = titles[cardType] || "Asset Details";
@@ -1376,7 +1382,10 @@ function showAssetDetails(category) {
         "expired_warranties": "📋 Assets with Expired Warranties", 
         "outdated_os": "🔒 Systems with Outdated Operating Systems",
         "low_stock": "📦 Low Stock Items",
-        "missing_data": "📝 Assets with Missing Information"
+        "missing_data": "📝 Assets with Missing Information",
+        "critical_issues": "🚨 Critical Issues - Immediate Attention Required",
+        "warning_issues": "⚠️ Warning Issues - Assets Need Review",
+        "total_issues": "📊 All Issues - Complete Overview"
     };
     
     modalTitle.textContent = titles[category] || "Asset Details";
