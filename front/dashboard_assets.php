@@ -275,6 +275,15 @@ foreach ($software_types as $table) {
     }
 }
 
+// Asset Distribution Details (same as Total Assets but with different presentation)
+$card_details['asset_distribution'] = $card_details['total_assets'];
+
+// Asset Breakdown Details (same as Total Assets but with different presentation)
+$card_details['asset_breakdown'] = $card_details['total_assets'];
+
+// Asset Summary Details (same as Total Assets but with different presentation)
+$card_details['asset_summary'] = $card_details['total_assets'];
+
 // Add tabbed interface CSS and JavaScript
 echo '<style>
 .dashboard-tabs {
@@ -372,7 +381,7 @@ echo '</div>';
 echo '<div style="display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">';
 
 // Pie Chart
-echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" onclick="showCardDetails(\'asset_distribution\')" onmouseover="this.style.transform=\'translateY(-5px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
 echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem; text-align: center;"> Asset Distribution</h3>';
 echo '<div style="display: flex; align-items: center; gap: 25px;">';
 
@@ -398,12 +407,14 @@ foreach ($asset_types as $class => $info) {
 }
 echo '</div>';
 echo '</div>';
+echo '<div style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 // Bar Chart using Chart.js
-echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" onclick="showCardDetails(\'asset_breakdown\')" onmouseover="this.style.transform=\'translateY(-5px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
 echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem; text-align: center;"> Asset Breakdown</h3>';
 echo '<canvas id="assetBarChart" width="400" height="200"></canvas>';
+echo '<div style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 echo '</div>';
 
@@ -411,7 +422,7 @@ echo '</div>';
 echo '<div style="display: flex; gap: 20px; flex-wrap: wrap;">';
 
 // Asset Status Table
-echo '<div style="flex: 1; min-width: 400px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<div style="flex: 1; min-width: 400px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" onclick="showCardDetails(\'asset_summary\')" onmouseover="this.style.transform=\'translateY(-5px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
 echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem;"> Asset Summary</h3>';
 echo '<table style="width: 100%; border-collapse: collapse;">';
 echo '<thead><tr style="background: #f8f9fa;"><th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Category</th><th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;">Count</th><th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;">Percentage</th></tr></thead>';
@@ -427,6 +438,7 @@ foreach ($asset_types as $class => $info) {
     echo '</tr>';
 }
 echo '</tbody></table>';
+echo '<div style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 // Quick Stats - AI Dynamic Insights Only
@@ -1087,7 +1099,10 @@ function showCardDetails(cardType) {
     const titles = {
         "total_assets": "📊 Total Assets Details",
         "active_hardware": "🖥️ Active Hardware Details",
-        "software_licenses": "💿 Software & Licenses Details"
+        "software_licenses": "💿 Software & Licenses Details",
+        "asset_distribution": "📈 Asset Distribution Details",
+        "asset_breakdown": "📊 Asset Breakdown Details",
+        "asset_summary": "📋 Asset Summary Details"
     };
     
     modalTitle.textContent = titles[cardType] || "Asset Details";
