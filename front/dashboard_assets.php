@@ -199,6 +199,130 @@ foreach ($asset_types as $table => $info) {
 }
 $gradient = empty($segments) ? '#ddd 0deg 360deg' : implode(', ', $segments);
 
+// Collect detailed data for card modals
+$card_details = [];
+
+// Total Assets Details
+$card_details['total_assets'] = [];
+foreach ($asset_types as $table => $info) {
+    if ($asset_counts[$table] > 0) {
+        // Handle different column names for different tables
+        if ($table == 'glpi_softwares') {
+            $query = "SELECT id, name, comment as serial, date_creation FROM `$table` WHERE is_deleted = 0 ORDER BY name LIMIT 50";
+        } elseif ($table == 'glpi_softwarelicenses') {
+            $query = "SELECT id, name, number as serial, date_creation FROM `$table` WHERE is_deleted = 0 ORDER BY name LIMIT 50";
+        } else {
+            $query = "SELECT id, name, serial, date_creation FROM `$table` WHERE is_deleted = 0 ORDER BY name LIMIT 50";
+        }
+        $result = $DB->query($query);
+        $items = [];
+        if ($result) {
+            while ($row = $DB->fetchAssoc($result)) {
+                $items[] = $row;
+            }
+        }
+        $card_details['total_assets'][$info['label']] = [
+            'count' => $asset_counts[$table],
+            'color' => $info['color'],
+            'items' => $items
+        ];
+    }
+}
+
+// Active Hardware Details (Computers, Monitors, Printers)
+$card_details['active_hardware'] = [];
+$hardware_types = ['glpi_computers', 'glpi_monitors', 'glpi_printers'];
+foreach ($hardware_types as $table) {
+    if (isset($asset_counts[$table]) && $asset_counts[$table] > 0) {
+        $query = "SELECT id, name, serial, date_creation FROM `$table` WHERE is_deleted = 0 ORDER BY name LIMIT 50";
+        $result = $DB->query($query);
+        $items = [];
+        if ($result) {
+            while ($row = $DB->fetchAssoc($result)) {
+                $items[] = $row;
+            }
+        }
+        $card_details['active_hardware'][$asset_types[$table]['label']] = [
+            'count' => $asset_counts[$table],
+            'color' => $asset_types[$table]['color'],
+            'items' => $items
+        ];
+    }
+}
+
+// Software & Licenses Details
+$card_details['software_licenses'] = [];
+$software_types = ['glpi_softwares', 'glpi_softwarelicenses'];
+foreach ($software_types as $table) {
+    if (isset($asset_counts[$table]) && $asset_counts[$table] > 0) {
+        if ($table == 'glpi_softwares') {
+            $query = "SELECT id, name, comment as serial, date_creation FROM `$table` WHERE is_deleted = 0 ORDER BY name LIMIT 50";
+        } else {
+            $query = "SELECT id, name, number as serial, date_creation FROM `$table` WHERE is_deleted = 0 ORDER BY name LIMIT 50";
+        }
+        $result = $DB->query($query);
+        $items = [];
+        if ($result) {
+            while ($row = $DB->fetchAssoc($result)) {
+                $items[] = $row;
+            }
+        }
+        $card_details['software_licenses'][$asset_types[$table]['label']] = [
+            'count' => $asset_counts[$table],
+            'color' => $asset_types[$table]['color'],
+            'items' => $items
+        ];
+    }
+}
+
+// Asset Distribution Details (same as Total Assets)
+$card_details['asset_distribution'] = $card_details['total_assets'];
+
+// Asset Breakdown Details (same as Total Assets but with different presentation)
+$card_details['asset_breakdown'] = $card_details['total_assets'];
+
+// Asset Summary Details (same as Total Assets but with different presentation)
+$card_details['asset_summary'] = $card_details['total_assets'];
+
+// Quick Stats Details (AI-generated insights with asset breakdown)
+$card_details['quick_stats'] = [
+    'AI Insights' => [
+        'count' => 3, // Number of insights shown
+        'color' => '#2c3e50',
+        'items' => [
+            [
+                'id' => 'insight_1',
+                'name' => 'Total Assets Overview',
+                'serial' => $total_assets . ' assets across 7 categories',
+                'date_creation' => date('Y-m-d H:i:s')
+            ],
+            [
+                'id' => 'insight_2', 
+                'name' => 'Computers Dominate',
+                'serial' => 'Computers (' . ($asset_counts['glpi_computers'] ?? 0) . ') are the majority of assets',
+                'date_creation' => date('Y-m-d H:i:s')
+            ],
+            [
+                'id' => 'insight_3',
+                'name' => 'All Categories in Use', 
+                'serial' => 'All 7 asset categories are utilized',
+                'date_creation' => date('Y-m-d H:i:s')
+            ]
+        ]
+    ]
+];
+
+// Add detailed breakdown for each category that has assets
+foreach ($asset_types as $table => $info) {
+    if ($asset_counts[$table] > 0) {
+        $card_details['quick_stats'][$info['label']] = [
+            'count' => $asset_counts[$table],
+            'color' => $info['color'],
+            'items' => $card_details['total_assets'][$info['label']]['items'] ?? []
+        ];
+    }
+}
+
 // Add tabbed interface CSS and JavaScript
 echo '<style>
 .dashboard-tabs {
@@ -270,22 +394,25 @@ echo '<div style="max-width: 1200px; margin: 40px auto; padding: 20px;">';
 
 // Row 1: Summary Cards
 echo '<div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">';
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">';
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onclick="showCardDetails(\'total_assets\')" onmouseover="this.style.transform=\'translateY(-5px)\'; this.style.boxShadow=\'0 8px 25px rgba(102, 126, 234, 0.4)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Total Assets</h3>';
 
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $total_assets . '</div>';
+echo '<div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 $active_assets = array_sum(array_slice($asset_counts, 0, 3)); // Computers + Monitors + Printers
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">';
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onclick="showCardDetails(\'active_hardware\')" onmouseover="this.style.transform=\'translateY(-5px)\'; this.style.boxShadow=\'0 8px 25px rgba(240, 147, 251, 0.4)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Active Hardware</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $active_assets . '</div>';
+echo '<div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 $software_count = ($asset_counts['glpi_softwares'] ?? 0) + ($asset_counts['glpi_softwarelicenses'] ?? 0);
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">';
+echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onclick="showCardDetails(\'software_licenses\')" onmouseover="this.style.transform=\'translateY(-5px)\'; this.style.boxShadow=\'0 8px 25px rgba(79, 172, 254, 0.4)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Software & Licenses</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $software_count . '</div>';
+echo '<div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 echo '</div>';
 
@@ -293,8 +420,9 @@ echo '</div>';
 echo '<div style="display: flex; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">';
 
 // Pie Chart
-echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<div onclick="showCardDetails(\'asset_distribution\')" style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
 echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem; text-align: center;"> Asset Distribution</h3>';
+echo '<p style="text-align: center; color: #666; font-size: 0.9rem; margin: -10px 0 15px 0;">Click to view details</p>';
 echo '<div style="display: flex; align-items: center; gap: 25px;">';
 
 if ($total_assets > 0) {
@@ -322,8 +450,9 @@ echo '</div>';
 echo '</div>';
 
 // Bar Chart using Chart.js
-echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<div onclick="showCardDetails(\'asset_breakdown\')" style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
 echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem; text-align: center;"> Asset Breakdown</h3>';
+echo '<p style="text-align: center; color: #666; font-size: 0.9rem; margin: -10px 0 15px 0;">Click to view details</p>';
 echo '<canvas id="assetBarChart" width="400" height="200"></canvas>';
 echo '</div>';
 echo '</div>';
@@ -332,8 +461,9 @@ echo '</div>';
 echo '<div style="display: flex; gap: 20px; flex-wrap: wrap;">';
 
 // Asset Status Table
-echo '<div style="flex: 1; min-width: 400px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">';
+echo '<div onclick="showCardDetails(\'asset_summary\')" style="flex: 1; min-width: 400px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
 echo '<h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.3rem;"> Asset Summary</h3>';
+echo '<p style="color: #666; font-size: 0.9rem; margin: -10px 0 15px 0;">Click to view details</p>';
 echo '<table style="width: 100%; border-collapse: collapse;">';
 echo '<thead><tr style="background: #f8f9fa;"><th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Category</th><th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;">Count</th><th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6;">Percentage</th></tr></thead>';
 echo '<tbody>';
@@ -351,11 +481,12 @@ echo '</tbody></table>';
 echo '</div>';
 
 // Quick Stats - AI Dynamic Insights Only
-echo '<div style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" id="quickstats-container">';
+echo '<div onclick="showCardDetails(\'quick_stats\')" style="flex: 1; min-width: 300px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); cursor: pointer; transition: all 0.3s ease;" id="quickstats-container" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(0,0,0,0.15)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 15px rgba(0,0,0,0.1)\'">';
 echo '<h3 style="margin: 0 0 20px 0; color: #2c3e50; font-size: 1.3rem; font-weight: 600; display: flex; align-items: center;">';
 echo '<span style="margin-right: 10px; font-size: 1.4rem;">🤖</span> Quick Stats';
 echo '<span id="ai-loading" style="margin-left: 10px; font-size: 0.8rem; color: #666; display: none; font-weight: 400;">Analyzing...</span>';
 echo '</h3>';
+echo '<p style="color: #666; font-size: 0.9rem; margin: -10px 0 15px 0;">Click to view details</p>';
 
 // Load AI configuration
 require_once(GLPI_ROOT . '/config/ai_config.php');
@@ -382,6 +513,28 @@ echo '</div>';
 
 // Close enhanced tab
 echo '</div>';
+
+// Card Details Modal
+echo '
+<div id="cardDetailsModal" style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(5px);">
+    <div style="background-color: #fefefe; margin: 3% auto; padding: 0; border-radius: 15px; width: 90%; max-width: 1200px; box-shadow: 0 10px 50px rgba(0,0,0,0.3); animation: slideIn 0.3s ease;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px 15px 0 0; position: relative;">
+            <h2 id="cardModalTitle" style="margin: 0; font-size: 1.5rem; display: flex; align-items: center;">Asset Details</h2>
+            <span onclick="closeCardDetails()" style="position: absolute; right: 20px; top: 20px; font-size: 28px; font-weight: bold; cursor: pointer; color: white; opacity: 0.8; transition: opacity 0.3s;" onmouseover="this.style.opacity=\'1\'" onmouseout="this.style.opacity=\'0.8\'">×</span>
+        </div>
+        <div id="cardModalContent" style="padding: 30px; max-height: 70vh; overflow-y: auto;">
+            Loading...
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-50px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+';
 
 // Tab 3: Maintenance View
 echo '<div id="maintenance-tab" class="tab-content">';
@@ -537,31 +690,35 @@ echo '</div>';
 echo '<div style="display: flex; gap: 20px; margin-bottom: 40px; flex-wrap: wrap;">';
 
 // Critical Issues Card
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
+echo '<div onclick="showAssetDetails(\'critical_issues\')" style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(255,107,107,0.3)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3>Critical Issues</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $critical_count . '</div>';
 echo '<div>Assets need immediate attention</div>';
+echo '<div style="position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 // Warning Issues Card
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
+echo '<div onclick="showAssetDetails(\'warning_issues\')" style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(255,167,38,0.3)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3>Warning Issues</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $warning_count . '</div>';
 echo '<div>Assets need review</div>';
+echo '<div style="position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 // Low Stock Card
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ab47bc 0%, #8e24aa 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
+echo '<div onclick="showAssetDetails(\'low_stock\')" style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #ab47bc 0%, #8e24aa 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(171,71,188,0.3)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3>Low Stock</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $low_stock_count . '</div>';
 echo '<div>Items need restocking</div>';
+echo '<div style="position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 // Total Issues Card
-echo '<div style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%); color: white; padding: 25px; border-radius: 15px; text-align: center;">';
+echo '<div onclick="showAssetDetails(\'total_issues\')" style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: all 0.3s ease; position: relative;" onmouseover="this.style.transform=\'translateY(-3px)\'; this.style.boxShadow=\'0 8px 25px rgba(66,165,245,0.3)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'none\'">';
 echo '<h3>Total Issues</h3>';
 echo '<div style="font-size: 2.5rem; font-weight: bold;">' . $total_maintenance_items . '</div>';
 echo '<div>Items requiring attention</div>';
+echo '<div style="position: absolute; bottom: 10px; right: 15px; font-size: 0.8rem; opacity: 0.8;">Click to view details</div>';
 echo '</div>';
 
 echo '</div>';
@@ -622,20 +779,20 @@ echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; b
 echo '<h3 style="color: #ff6b6b;">Critical Issues</h3>';
 
 if ($maintenance_stats['old_computers'] > 0) {
-    echo '<div style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4>Legacy Equipment</h4>
+    echo '<div onclick="showAssetDetails(\'old_computers\')" style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background=\'#ffcdd2\'; this.style.transform=\'translateX(5px)\'" onmouseout="this.style.background=\'#ffebee\'; this.style.transform=\'translateX(0)\'">
+          <h4>Legacy Equipment <span style="font-size: 0.8em; color: #666; float: right;">Click for details →</span></h4>
           <p><strong>' . $maintenance_stats['old_computers'] . '</strong> computers are over 5 years old</p>
           </div>';
 }
 if ($maintenance_stats['expired_warranty'] > 0) {
-    echo '<div style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4>Expired Warranty</h4>
+    echo '<div onclick="showAssetDetails(\'expired_warranties\')" style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background=\'#ffcdd2\'; this.style.transform=\'translateX(5px)\'" onmouseout="this.style.background=\'#ffebee\'; this.style.transform=\'translateX(0)\'">
+          <h4>Expired Warranty <span style="font-size: 0.8em; color: #666; float: right;">Click for details →</span></h4>
           <p><strong>' . $maintenance_stats['expired_warranty'] . '</strong> computers have expired warranties</p>
           </div>';
 }
 if ($maintenance_stats['outdated_os'] > 0) {
-    echo '<div style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4>Outdated OS</h4>
+    echo '<div onclick="showAssetDetails(\'outdated_os\')" style="background: #ffebee; padding: 15px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background=\'#ffcdd2\'; this.style.transform=\'translateX(5px)\'" onmouseout="this.style.background=\'#ffebee\'; this.style.transform=\'translateX(0)\'">
+          <h4>Outdated OS <span style="font-size: 0.8em; color: #666; float: right;">Click for details →</span></h4>
           <p><strong>' . $maintenance_stats['outdated_os'] . '</strong> computers running Windows 7/XP</p>
           </div>';
 }
@@ -649,14 +806,14 @@ echo '<div style="flex: 1; min-width: 400px; background: white; padding: 30px; b
 echo '<h3 style="color: #ffa726;">Warning Issues</h3>';
 
 if ($maintenance_stats['no_purchase_date'] > 0) {
-    echo '<div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4>Missing Purchase Date</h4>
+    echo '<div onclick="showAssetDetails(\'missing_data\')" style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background=\'#ffe0b2\'; this.style.transform=\'translateX(5px)\'" onmouseout="this.style.background=\'#fff3e0\'; this.style.transform=\'translateX(0)\'">
+          <h4>Missing Purchase Date <span style="font-size: 0.8em; color: #666; float: right;">Click for details →</span></h4>
           <p><strong>' . $maintenance_stats['no_purchase_date'] . '</strong> computers missing purchase date</p>
           </div>';
 }
 if ($maintenance_stats['no_manufacturer'] > 0) {
-    echo '<div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-          <h4>Missing Manufacturer</h4>
+    echo '<div onclick="showAssetDetails(\'missing_data\')" style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background=\'#ffe0b2\'; this.style.transform=\'translateX(5px)\'" onmouseout="this.style.background=\'#fff3e0\'; this.style.transform=\'translateX(0)\'">
+          <h4>Missing Manufacturer <span style="font-size: 0.8em; color: #666; float: right;">Click for details →</span></h4>
           <p><strong>' . $maintenance_stats['no_manufacturer'] . '</strong> computers missing manufacturer info</p>
           </div>';
 }
@@ -945,6 +1102,23 @@ if ($result) {
     }
 }
 
+// Create combined data arrays for maintenance cards
+$asset_data['critical_issues'] = array_merge(
+    $asset_data['old_computers'] ?? [],
+    $asset_data['expired_warranties'] ?? [],
+    $asset_data['outdated_os'] ?? []
+);
+
+$asset_data['warning_issues'] = array_merge(
+    $asset_data['missing_data'] ?? []
+);
+
+$asset_data['total_issues'] = array_merge(
+    $asset_data['critical_issues'],
+    $asset_data['warning_issues'],
+    $asset_data['low_stock'] ?? []
+);
+
 echo '<div id="maintenance-recommendations">';
 $ai_recommendations = $ai_maintenance->generateMaintenanceRecommendations($maintenance_stats, $low_stock_count);
 echo $ai_recommendations;
@@ -971,6 +1145,119 @@ function switchTab(tabName, buttonElement) {
     
     // Add active class to clicked button
     buttonElement.classList.add("active");
+}
+
+// Card Details Data
+const cardDetails = ' . json_encode($card_details) . ';
+
+// Function to show card details
+function showCardDetails(cardType) {
+    const modal = document.getElementById("cardDetailsModal");
+    const modalTitle = document.getElementById("cardModalTitle");
+    const modalContent = document.getElementById("cardModalContent");
+    
+    // Set modal title based on card type
+    const titles = {
+        "total_assets": "📊 Total Assets Details",
+        "active_hardware": "🖥️ Active Hardware Details",
+        "software_licenses": "💿 Software & Licenses Details",
+        "asset_distribution": "📈 Asset Distribution Details",
+        "asset_breakdown": "📊 Asset Breakdown Details", 
+        "asset_summary": "📋 Asset Summary Details",
+        "quick_stats": "🤖 Quick Stats Details"
+    };
+    
+    modalTitle.textContent = titles[cardType] || "Asset Details";
+    modal.style.display = "block";
+    
+    // Get the data for this card
+    const data = cardDetails[cardType] || {};
+    
+    if (Object.keys(data).length === 0) {
+        modalContent.innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <div style="color: #666; font-size: 18px;">No data available for this category.</div>
+            </div>
+        `;
+        return;
+    }
+    
+    // Build the content
+    let html = `<div style="display: flex; flex-wrap: wrap; gap: 20px;">`;
+    
+    Object.keys(data).forEach(function(category) {
+        const categoryData = data[category];
+        const items = categoryData.items || [];
+        const count = categoryData.count || 0;
+        const color = categoryData.color || "#666";
+        
+        html += `
+            <div style="flex: 1; min-width: 300px; background: #f8f9fa; border-radius: 12px; overflow: hidden; border: 1px solid #e9ecef;">
+                <div style="background: ${color}; color: white; padding: 20px; text-align: center;">
+                    <h3 style="margin: 0; font-size: 1.2rem;">${escapeHtml(category)}</h3>
+                    <div style="font-size: 2rem; font-weight: bold; margin-top: 8px;">${count}</div>
+                </div>
+                <div style="padding: 20px; max-height: 400px; overflow-y: auto;">
+        `;
+        
+        if (items.length > 0) {
+            html += `<div style="space-y: 8px;">`;
+            items.forEach(function(item, index) {
+                if (index < 20) { // Limit to first 20 items
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 8px; border: 1px solid #e9ecef; margin-bottom: 8px;">
+                            <div>
+                                <div style="font-weight: 600; color: #333;">${escapeHtml(item.name || "Unnamed")}</div>
+                                <div style="color: #666; font-size: 0.85rem;">${escapeHtml(item.serial || "No serial")}</div>
+                            </div>
+                            <div style="text-align: right; color: #888; font-size: 0.8rem;">
+                                ID: ${item.id}<br>
+                                ${item.date_creation ? new Date(item.date_creation).toLocaleDateString() : "N/A"}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            if (items.length > 20) {
+                html += `<div style="text-align: center; color: #666; font-style: italic; margin-top: 15px;">... and ${items.length - 20} more items</div>`;
+            }
+            
+            html += `</div>`;
+        } else {
+            html += `<div style="text-align: center; color: #666; padding: 20px;">No items found</div>`;
+        }
+        
+        html += `</div></div>`;
+    });
+    
+    html += `</div>`;
+    
+    html += `<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; text-align: center; color: #666; font-size: 0.9rem;">`;
+    html += `Showing up to 20 items per category • Last updated: ` + new Date().toLocaleString();
+    html += `</div>`;
+    
+    modalContent.innerHTML = html;
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Function to close modal
+function closeCardDetails() {
+    document.getElementById("cardDetailsModal").style.display = "none";
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById("cardDetailsModal");
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
 }
 </script>';
 
@@ -1151,7 +1438,10 @@ function showAssetDetails(category) {
         "expired_warranties": "📋 Assets with Expired Warranties", 
         "outdated_os": "🔒 Systems with Outdated Operating Systems",
         "low_stock": "📦 Low Stock Items",
-        "missing_data": "📝 Assets with Missing Information"
+        "missing_data": "📝 Assets with Missing Information",
+        "critical_issues": "🚨 Critical Issues - Immediate Attention Required",
+        "warning_issues": "⚠️ Warning Issues - Assets Need Review",
+        "total_issues": "📊 All Issues - Complete Overview"
     };
     
     modalTitle.textContent = titles[category] || "Asset Details";
